@@ -11,6 +11,14 @@ import sys
 from typing import List, Optional
 
 from cli import __version__
+from cli.commands.memsafe_roadmap import (
+    add_memsafe_roadmap_parser,
+    memsafe_roadmap_command,
+)
+from cli.commands.migrate_plan import (
+    add_migrate_plan_parser,
+    migrate_plan_command,
+)
 from cli.commands.priors import add_priors_parser, priors_command
 from cli.commands.run import add_run_parser, run_command
 from cli.commands.status import add_status_parser, status_command
@@ -34,6 +42,9 @@ def _build_parser() -> argparse.ArgumentParser:
     add_run_parser(subparsers)
     add_status_parser(subparsers)
     add_priors_parser(subparsers)
+    # Wedge subcommands (Phase A scaffolding; Phase B end-to-end wiring).
+    add_memsafe_roadmap_parser(subparsers)
+    add_migrate_plan_parser(subparsers)
 
     # version subcommand kept for backwards compat with Sprint 1
     subparsers.add_parser("version", help="Print the kaizen-cli version and exit")
@@ -54,6 +65,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             return status_command(args)
         if args.command == "priors":
             return priors_command(args)
+        if args.command == "memsafe-roadmap":
+            return memsafe_roadmap_command(args)
+        if args.command == "migrate-plan":
+            return migrate_plan_command(args)
         if args.command == "version":
             print(__version__)
             return 0
