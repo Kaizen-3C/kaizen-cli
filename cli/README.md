@@ -1,26 +1,107 @@
 # kaizen-cli
 
-Command-line interface for the Kaizen CD-AOR autonomous code engineering system.
+Command-line interface for **Kaizen** — the architecture-aware code generation
+engine. The CLI ships the two end-to-end wedges (memory safety and framework
+migration) on top of the symmetric decompose/recompose pipeline, plus the
+pre-reframe bootstrap orchestrator for generic ADR-driven runs.
+
+Apache-2.0. The UI (multi-tenant, RBAC, audit log, approval workflows) is a
+separate Kaizen Enterprise Commercial surface — see
+[`docs/commercial/FEATURE_MATRIX.md`](../docs/commercial/FEATURE_MATRIX.md)
+for the open-core boundary.
 
 ## Install
+
+```
+pip install kaizen-cli
+```
+
+Or from a local checkout:
 
 ```
 pip install -e .
 ```
 
-Run from the repo root (`C:\RepoEx\Kaizen-beta`).
+Requires Python 3.10+. An LLM provider key is required for the wedge commands
+(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) or a reachable Ollama host for local
+runs.
 
-## Commands
+## Quickstart — the two wedges
 
-### `kaizen run`
+### `kaizen memsafe-roadmap` — C/C++ → Rust
 
-Runs the bootstrap orchestrator against a workspace. Two task-spec modes:
+Produces a CISA-format memory-safety roadmap and per-module ADR stubs from a
+C/C++ repository. Optionally runs recompose to emit a Rust port.
 
 ```
-# ADR-driven (canonical):
+# Plain ADR pipeline (baseline for the 3-arm ablation)
+kaizen memsafe-roadmap ./my-c-repo --plain -o roadmap.md
+
+# Domain-enriched schema (memory-safe-specific ADR fields)
+kaizen memsafe-roadmap ./my-c-repo -o roadmap.md --adr-dir adrs/
+
+# Full pipeline: roadmap + Rust port
+kaizen memsafe-roadmap ./my-c-repo --recompose --rust-output rust-port/
+```
+
+Case study: [memsafe-01-inih](../docs/case-studies/memsafe-01-inih/README.md)
+— 522 LOC C → Rust. One-shot LLM: 6 `cargo check` errors. Plain ADR pipeline:
+1 error. ADR + memory-safe domain schema: **0 errors**.
+
+### `kaizen migrate-plan` — framework modernization
+
+Produces a migration plan and ADR stubs for a framework transition. Supports
+nine language/framework pairs:
+
+| `--from`           | `--to`            | Languages     |
+|--------------------|-------------------|---------------|
+| `angularjs`        | `angular`         | JS → TS       |
+| `angularjs`        | `react`           | JS → TS       |
+| `jquery`           | `react`           | JS → TS       |
+| `dotnet-framework` | `dotnet8`         | C#            |
+| `dotnet-framework` | `dotnet9`         | C#            |
+| `python2`          | `python3`         | Python        |
+| `spring4`          | `spring-boot3`    | Java          |
+| `java8`            | `java17`          | Java          |
+| `java8`            | `java21`          | Java          |
+
+```
+# Plain ADR pipeline
+kaizen migrate-plan --from dotnet-framework --to dotnet8 ./my-repo --plain
+
+# Domain-enriched plan + target-code recompose
+kaizen migrate-plan --from angularjs --to react ./my-repo \
+    --recompose --target-output migrated/
+```
+
+Case study:
+[framework-01-nancy-context](../docs/case-studies/framework-01-nancy-context/README.md)
+— Nancy `NancyContext.cs` .NET Framework → .NET 8, 148 LOC. One-shot: 14
+`dotnet build` errors; plain ADR: 0 errors; domain schema captures 15 API
+contracts + 6 dependency decisions the plain pipeline misses.
+
+### Shared wedge flags
+
+- `--plain`                 omit domain-specific ADR schema fields (baseline arm)
+- `--recompose`             run recompose after planning
+- `--provider {anthropic,openai,ollama,litellm,mixed}`
+- `--model MODEL`           override provider default
+- `--adr-dir PATH`          where ADR stubs are written
+- `--glob PATTERN`          source file filter
+- `--dry-run`               print the resolved plan and exit
+- `--format {human,json}`   output format
+
+## Generic commands
+
+### `kaizen run` — bootstrap orchestrator
+
+Runs the 5-agent denoising loop against an ADR or free-text task. Two modes:
+
+```
+# ADR-driven
 kaizen run --target-adr ADR-0008 --workspace ./myrepo --provider anthropic
 
-# Free-text (wraps the task in a synthetic ADR-9999 on disk):
+# Free-text (wraps in a synthetic ADR-9999 on disk)
 kaizen run --task "modernize auth module" --workspace ./myrepo
 ```
 
@@ -39,10 +120,8 @@ Key flags:
 
 ### `kaizen status`
 
-Scans the current directory for `taor_observations.jsonl` and `priors.json`
-artifacts and prints a summary (most recent run timestamp, last confidence
-trajectory). Prints `No prior Kaizen runs detected in this directory` on a
-clean tree.
+Scans for `taor_observations.jsonl` and `priors.json` and prints a summary
+(most recent run, last confidence trajectory).
 
 ```
 kaizen status
@@ -53,7 +132,7 @@ kaizen status --path ./benchmarks
 
 ```
 kaizen priors show [PATH]     # pretty-print a priors file (default: ./priors.json)
-kaizen priors reset [PATH]    # delete a priors file with confirmation (--yes to skip)
+kaizen priors reset [PATH]    # delete a priors file (--yes to skip confirm)
 ```
 
 ### `kaizen version`
@@ -72,9 +151,17 @@ Prints the CLI version.
 - `2`   usage error (bad args, missing workspace, missing credentials)
 - `130` interrupted (Ctrl-C); priors are persisted if enabled
 
-## Output
+## Output conventions
 
-- All normal output goes to **stdout**.
-- Errors and warnings go to **stderr**.
+- Normal output → **stdout**
+- Errors and warnings → **stderr**
 - Color is emitted only when stdout is a TTY and `--no-color` / `NO_COLOR`
-  are not set.
+  are not set
+
+## Further reading
+
+- [Feature matrix — CLI (Apache) vs UI (Commercial)](../docs/commercial/FEATURE_MATRIX.md)
+- [Competitive positioning](../docs/markets/COMPETITIVE_ANALYSIS_2026.md)
+- [Memory-safety wedge rationale](../docs/markets/MEMORY_SAFETY_WEDGE.md)
+- [Framework-modernization wedge rationale](../docs/markets/FRAMEWORK_MODERNIZATION_WEDGE.md)
+- [Strategic roadmap](../STRATEGIC_ROADMAP.md)

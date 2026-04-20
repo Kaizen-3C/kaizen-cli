@@ -2,7 +2,7 @@
 """`kaizen memsafe-roadmap` — generate a CISA-format memory safety roadmap.
 
 End-to-end wiring (Phase B, 2026-04-19 reframe):
-  1. Run `scripts/pipeline/decompose_v2.py` on the target repo (optionally
+  1. Run `cli.pipeline.decompose_v2` on the target repo (optionally
      with `--domain memory-safe` for the full ownership/lifetime schema).
   2. Parse the emitted ADR markdown to extract Decisions + Key Identifiers
      + Ownership Decisions (if domain schema was used).
@@ -32,18 +32,29 @@ from .. import output
 from ..output import Style
 
 
-_KAIZEN_ROOT = Path(__file__).resolve().parent.parent.parent
-_DECOMPOSE_SCRIPT = _KAIZEN_ROOT / "scripts" / "pipeline" / "decompose_v2.py"
-_RECOMPOSE_SCRIPT = _KAIZEN_ROOT / "scripts" / "pipeline" / "recompose_v2.py"
+_CLI_PACKAGE_ROOT = Path(__file__).resolve().parent.parent
+_PIPELINE_DIR = _CLI_PACKAGE_ROOT / "pipeline"
+_DECOMPOSE_SCRIPT = _PIPELINE_DIR / "decompose_v2.py"
+_RECOMPOSE_SCRIPT = _PIPELINE_DIR / "recompose_v2.py"
+
+# Preserved for any downstream imports; dev-checkout root (three levels up from
+# this file) is the repo root, which is where a contributor's `.env` typically
+# lives. In an installed-package context this path won't exist — the `.env`
+# lookup in _build_subprocess_env falls back to the caller's CWD.
+_KAIZEN_ROOT = _CLI_PACKAGE_ROOT.parent
 
 
 def _build_subprocess_env():
     """Return an environment dict to pass to subprocesses, with .env loaded
-    from the kaizen root if present. Users can also rely on the caller's
-    already-exported environment; this helper is best-effort augmentation."""
+    from the caller's CWD (preferred) or the dev-checkout repo root. Users
+    can also rely on the caller's already-exported environment; this helper
+    is best-effort augmentation."""
     env = dict(os.environ)
-    dotenv_path = _KAIZEN_ROOT / ".env"
-    if not dotenv_path.exists():
+    for candidate in (Path.cwd() / ".env", _KAIZEN_ROOT / ".env"):
+        if candidate.exists():
+            dotenv_path = candidate
+            break
+    else:
         return env
     try:
         for line in dotenv_path.read_text(encoding="utf-8").splitlines():

@@ -2,7 +2,7 @@
 """`kaizen migrate-plan` — generate a framework-migration plan + per-module ADRs.
 
 End-to-end wiring (Phase B, 2026-04-19 reframe):
-  1. Run `scripts/pipeline/decompose_v2.py` on the target repo (optionally
+  1. Run `cli.pipeline.decompose_v2` on the target repo (optionally
      with `--domain framework-migration` for the full API-contract schema).
   2. Parse the emitted ADR markdown to extract Decisions + Key Identifiers
      + framework-migration domain sections (if domain schema was used).
