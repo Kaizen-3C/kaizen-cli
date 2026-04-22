@@ -28,7 +28,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .. import output
+from .. import config as _cfg
+from .. import events, output
 from ..output import Style
 
 
@@ -106,6 +107,10 @@ def add_memsafe_roadmap_parser(subparsers: argparse._SubParsersAction) -> argpar
                         "win, without the ownership-decisions schema overhead).")
     p.add_argument("--recompose", action="store_true",
                    help="Also produce a Rust crate (slower; requires more budget)")
+    p.add_argument("--approve", action="store_true",
+                   help="Prompt before running the optional recompose stage")
+    p.add_argument("--yolo", action="store_true",
+                   help="Explicitly opt out of the approval prompt (default behavior)")
     p.add_argument("--rust-output", metavar="PATH", default="rust-port",
                    help="If --recompose, output directory for the Rust crate "
                         "(default: rust-port/)")
@@ -114,6 +119,10 @@ def add_memsafe_roadmap_parser(subparsers: argparse._SubParsersAction) -> argpar
                    help="LLM provider (default: anthropic)")
     p.add_argument("--model", default=None,
                    help="Model name override")
+    p.add_argument("--llm-review", action="store_true",
+                   help="Run adversarial LLM review of the ADR after decompose (ADR-0009).")
+    p.add_argument("--review-model", default=None, metavar="MODEL",
+                   help="Explicit review model override (only used with --llm-review).")
     p.add_argument("--dry-run", action="store_true",
                    help="Print the planned pipeline steps without calling any LLM")
     p.add_argument("--format", choices=["human", "json"], default="human",
@@ -325,6 +334,7 @@ def _write_per_module_adr_stubs(
 
 
 def memsafe_roadmap_command(args: argparse.Namespace) -> int:
+    _cfg.apply_defaults(args)
     style: Style = Style(use_color=(not args.no_color) if hasattr(args, "no_color") else None)
     repo = Path(args.repo).resolve()
 
@@ -368,9 +378,20 @@ def memsafe_roadmap_command(args: argparse.Namespace) -> int:
         print(style.dim("no orchestrator invoked; exit 0"))
         return 0
 
+    # --- Emit run.start for streaming consumers (web UI, log ingestion) ------
+    total_stages = (4 if args.recompose else 3) + (1 if args.llm_review else 0)
+    events.run_start(
+        command="memsafe-roadmap",
+        repo=str(repo),
+        plain=args.plain,
+        recompose=args.recompose,
+        provider=args.provider,
+        model=args.model,
+    )
+
     # --- Step 1: Decompose ----------------------------------------------------
     adr_dir.mkdir(parents=True, exist_ok=True)
-    print(style.bold("[1/3] Decompose"), flush=True)
+    events.stage("decompose", index=1, total=total_stages, use_domain=use_domain)
     cmd = [
         sys.executable, str(_DECOMPOSE_SCRIPT),
         "--input", str(repo),
@@ -384,16 +405,21 @@ def memsafe_roadmap_command(args: argparse.Namespace) -> int:
         cmd += ["--domain", "memory-safe"]
     if args.model:
         cmd += ["--model", args.model]
-    rc = subprocess.run(cmd, env=_build_subprocess_env()).returncode
+    rc = events.run_subprocess_with_logs(cmd, env=_build_subprocess_env(), source="decompose")
     if rc != 0:
+        events.error(f"decompose failed with exit code {rc}")
         output.error(style, f"decompose failed with exit code {rc}")
+        events.result(rc)
         return rc
     if not root_adr_path.exists():
+        events.error(f"decompose did not produce the expected ADR at {root_adr_path}")
         output.error(style, f"decompose did not produce the expected ADR at {root_adr_path}")
+        events.result(3)
         return 3
+    events.stage_done("decompose", adr_path=str(root_adr_path))
 
     # --- Step 2: Parse ADR and render roadmap --------------------------------
-    print(style.bold("[2/3] Render CISA roadmap"), flush=True)
+    events.stage("render_roadmap", index=2, total=total_stages)
     adr_md = root_adr_path.read_text(encoding="utf-8")
     decisions = _extract_decisions(adr_md)
     key_ids = _extract_key_identifiers(adr_md)
@@ -405,18 +431,77 @@ def memsafe_roadmap_command(args: argparse.Namespace) -> int:
     )
     roadmap_path.parent.mkdir(parents=True, exist_ok=True)
     roadmap_path.write_text(roadmap_md, encoding="utf-8")
-    print(f"       wrote {roadmap_path}  "
-          f"({len(key_ids)} identifiers, {len(decisions)} decisions, "
-          f"{len(ownership)} ownership rows)")
+    events.stage_done(
+        "render_roadmap",
+        roadmap_path=str(roadmap_path),
+        identifiers=len(key_ids),
+        decisions=len(decisions),
+        ownership_rows=len(ownership),
+    )
 
     # --- Step 3: Per-module ADR stubs ----------------------------------------
-    print(style.bold("[3/3] Per-module ADR stubs"), flush=True)
+    events.stage("adr_stubs", index=3, total=total_stages)
     stub_count = _write_per_module_adr_stubs(adr_dir, key_ids, root_adr_path)
-    print(f"       wrote {stub_count} module stub(s) under {adr_dir}/")
+    events.stage_done("adr_stubs", stub_count=stub_count, adr_dir=str(adr_dir))
+
+    # --- Optional: LLM Review (ADR-0009 anti-vibe-coding guardrail) ----------
+    review_result: dict | None = None
+    if args.llm_review:
+        from .. import review as _review
+        events.stage("llm_review", index=4, total=total_stages,
+                     model=_review._pick_review_model(args.model, args.provider,
+                                                      getattr(args, "review_model", None)))
+        review_result = _review.run_llm_review(
+            root_adr_path,
+            provider=args.provider,
+            model=args.model,
+            review_model=getattr(args, "review_model", None),
+            source_dir=repo,
+        )
+        events.stage_done(
+            "llm_review",
+            review_path=review_result.get("review_path"),
+            findings_count=review_result.get("findings_count"),
+            critical_findings=review_result.get("critical_findings"),
+            model=review_result.get("model"),
+        )
+        if review_result["exit_code"] != 0:
+            events.warn(f"llm-review exited {review_result['exit_code']}; continuing")
 
     # --- Optional: Recompose --------------------------------------------------
+    rust_dir: Path | None = None
+    if args.recompose and args.approve:
+        from ..approval import approval_prompt
+        events.stage("approval", index=0, total=total_stages)
+        if not approval_prompt(
+            f"ADR ready at {root_adr_path}. Continue to recompose to Rust?",
+            yolo=args.yolo,
+        ):
+            events.stage_done("approval", decision="declined")
+            events.result(
+                0,
+                roadmap=str(roadmap_path),
+                adr_root=str(root_adr_path),
+                adr_stubs=stub_count,
+                identifiers=len(key_ids),
+                decisions=len(decisions),
+                ownership_decisions=len(ownership),
+                used_domain_schema=use_domain,
+                rust_output=None,
+                review_findings=review_result if review_result else None,
+                recompose_approved=False,
+            )
+            if events.get_mode() != "ndjson":
+                print()
+                print(style.bold("Done (recompose declined)."))
+                print(f"  Roadmap:   {roadmap_path}")
+                print(f"  Root ADR:  {root_adr_path}")
+                print(f"  Stubs:     {adr_dir}/ ({stub_count} file(s))")
+            return 0
+        events.stage_done("approval", decision="approved")
     if args.recompose:
-        print(style.bold("[4/4] Recompose to Rust"), flush=True)
+        recompose_idx = 5 if args.llm_review else 4
+        events.stage("recompose", index=recompose_idx, total=total_stages, target="Rust")
         rust_dir = Path(args.rust_output).resolve()
         rcmd = [
             sys.executable, str(_RECOMPOSE_SCRIPT),
@@ -431,30 +516,47 @@ def memsafe_roadmap_command(args: argparse.Namespace) -> int:
             rcmd += ["--domain", "memory-safe"]
         if args.model:
             rcmd += ["--model", args.model]
-        rc = subprocess.run(rcmd, env=_build_subprocess_env()).returncode
+        rc = events.run_subprocess_with_logs(rcmd, env=_build_subprocess_env(), source="recompose")
         if rc != 0:
+            events.warn(f"recompose exited {rc}; roadmap + ADRs already written")
             output.warn(style, f"recompose exited {rc}; roadmap + ADRs already written")
         else:
-            print(f"       wrote Rust crate under {rust_dir}/")
+            events.stage_done("recompose", rust_dir=str(rust_dir))
 
-    if args.format == "json":
-        print(json.dumps({
-            "ok": True,
-            "repo": str(repo),
-            "roadmap": str(roadmap_path),
-            "adr_root": str(root_adr_path),
-            "adr_stubs": stub_count,
-            "identifiers": len(key_ids),
-            "decisions": len(decisions),
-            "ownership_decisions": len(ownership),
-            "used_domain_schema": use_domain,
-        }, indent=2))
-    else:
-        print()
-        print(style.bold("Done."))
-        print(f"  Roadmap:   {roadmap_path}")
-        print(f"  Root ADR:  {root_adr_path}")
-        print(f"  Stubs:     {adr_dir}/ ({stub_count} file(s))")
-        print(style.dim("  Review: see the 'Reviewer Checklist' section in the roadmap."))
+    # Final structured result (always emitted; streaming consumers rely on it)
+    events.result(
+        0,
+        roadmap=str(roadmap_path),
+        adr_root=str(root_adr_path),
+        adr_stubs=stub_count,
+        identifiers=len(key_ids),
+        decisions=len(decisions),
+        ownership_decisions=len(ownership),
+        used_domain_schema=use_domain,
+        rust_output=str(rust_dir) if rust_dir else None,
+        review_findings=review_result if review_result else None,
+    )
+
+    # Human-mode summary — only render when NOT in ndjson/streaming mode.
+    if events.get_mode() != "ndjson":
+        if args.format == "json":
+            print(json.dumps({
+                "ok": True,
+                "repo": str(repo),
+                "roadmap": str(roadmap_path),
+                "adr_root": str(root_adr_path),
+                "adr_stubs": stub_count,
+                "identifiers": len(key_ids),
+                "decisions": len(decisions),
+                "ownership_decisions": len(ownership),
+                "used_domain_schema": use_domain,
+            }, indent=2))
+        else:
+            print()
+            print(style.bold("Done."))
+            print(f"  Roadmap:   {roadmap_path}")
+            print(f"  Root ADR:  {root_adr_path}")
+            print(f"  Stubs:     {adr_dir}/ ({stub_count} file(s))")
+            print(style.dim("  Review: see the 'Reviewer Checklist' section in the roadmap."))
 
     return 0
