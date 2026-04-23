@@ -27,6 +27,8 @@ from cli.commands.priors import add_priors_parser, priors_command
 from cli.commands.resume import add_resume_parser, resume_command
 from cli.commands.status import add_status_parser, status_command
 from cli.commands.web import add_web_parser, web_command
+from cli.commands.bench import add_bench_parser, bench_command
+from cli.commands.demo import add_demo_parser, demo_command
 from cli.output import Style, error
 
 # Note: `kaizen run` (the pre-reframe generic bootstrap orchestrator under
@@ -70,6 +72,12 @@ def _build_parser() -> argparse.ArgumentParser:
     add_web_parser(subparsers)
     # MCP server — requires the [mcp] optional dependency group.
     add_mcp_serve_parser(subparsers)
+    # Architectural-weakness benchmarking — funnel-mouth for Kaizen-3C/benchmarks
+    # methodology. Vendored analysis scripts; see cli/bench/.
+    add_bench_parser(subparsers)
+    # First-run "wow" walkthrough — offline, no API key required (when the
+    # bundled cache asset is present). See cli/commands/demo.py.
+    add_demo_parser(subparsers)
 
     # version subcommand kept for backwards compat with Sprint 1
     subparsers.add_parser("version", help="Print the kaizen-cli version and exit")
@@ -104,6 +112,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             return init_command(args)
         if args.command == "resume":
             return resume_command(args)
+        if args.command == "bench":
+            return bench_command(args)
+        if args.command == "demo":
+            return demo_command(args)
         if args.command == "version":
             print(__version__)
             return 0
