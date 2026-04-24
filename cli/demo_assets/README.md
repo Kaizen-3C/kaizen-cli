@@ -1,6 +1,6 @@
 # cli/demo_assets — Bundled demo assets for `kaizen demo`
 
-This directory ships inside the `kaizen-cli` PyPI wheel and is located by
+This directory ships inside the `kaizen-3c-cli` PyPI wheel and is located by
 `cli/commands/demo.py` via `importlib.resources`.
 
 ## What this directory contains

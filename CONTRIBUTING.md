@@ -42,7 +42,7 @@ before merge.
 ## Code style
 
 - **Python:** PEP 8; 4-space indent; `ruff` is the project linter
-  (`pip install kaizen-cli[dev]` pulls it in). Run `ruff check .` before
+  (`pip install kaizen-3c-cli[dev]` pulls it in). Run `ruff check .` before
   opening a PR. We do not currently enforce `black` formatting, but
   consistent style matching the surrounding file is expected.
 - **Type hints:** encouraged on all public functions and CLI entry points;

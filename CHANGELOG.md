@@ -78,7 +78,7 @@ bumped to 3.10+.
   `list_runs`, `read_adr`. Tool handlers call the same Python functions the
   CLI uses, so every surface stays in lockstep. Transport: stdio (default,
   for Claude Desktop) or SSE (`--transport sse --port 7866`). Requires
-  `pip install 'kaizen-cli[mcp]'`.
+  `pip install 'kaizen-3c-cli[mcp]'`.
 
 #### CLI flags on existing pipeline commands
 
@@ -149,7 +149,7 @@ Pre-existing suites (events, wedge routes, SSE) unchanged and still green.
 
 ## [0.3.0] - 2026-04-21
 
-First public release — `pip install kaizen-cli`. Apache-2.0 core, dual-licensed
+First public release — `pip install kaizen-3c-cli`. Apache-2.0 core, dual-licensed
 with the Kaizen Enterprise Commercial License (see ADR-0053).
 
 ### Added
@@ -172,13 +172,13 @@ with the Kaizen Enterprise Commercial License (see ADR-0053).
 - `kaizen status [--path]` — summarize recent Kaizen runs in a directory.
 - `kaizen priors show|reset [--path]` — inspect / reset Thompson priors files.
 - `kaizen web [--port] [--host] [--open]` — start the lite web UI on
-  `127.0.0.1:7865`. Requires `pip install 'kaizen-cli[web]'`.
+  `127.0.0.1:7865`. Requires `pip install 'kaizen-3c-cli[web]'`.
 - Structured progress events via `cli.events` — CLI prints human-readable
   lines by default; `KAIZEN_EVENT_STREAM=ndjson` switches to NDJSON for
   `jq` / CI log ingestion. Wedge commands emit
   `run.start` / `stage` / `detail` / `stage.done` / `result` events.
 
-#### Web UI (`kaizen-cli[web]`, optional)
+#### Web UI (`kaizen-3c-cli[web]`, optional)
 
 - FastAPI backend at `kaizen_web/` — 11 routes over the CLI surface. Blocking
   and SSE variants for all four pipeline commands (decompose, recompose,
