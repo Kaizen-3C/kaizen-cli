@@ -37,30 +37,30 @@ def _make_args(
 
 
 def _build_fake_tarball(dest_dir: Path) -> Path:
-    """Create a minimal wcwidth_demo.tar.gz in *dest_dir* and return the path."""
+    """Create a minimal slugify_demo.tar.gz in *dest_dir* and return the path."""
     # Scratch area for tarball contents.
     scratch = dest_dir / "_scratch"
-    demo_root = scratch / "wcwidth_demo"
+    demo_root = scratch / "slugify_demo"
     after_dir = demo_root / "after"
     after_dir.mkdir(parents=True)
 
     # adr.md — 35 lines so we exercise the "first 30 lines" truncation.
-    adr_lines = ["# ADR: wcwidth demo"] + [f"Line {i}" for i in range(2, 36)]
+    adr_lines = ["# ADR: python-slugify demo"] + [f"Line {i}" for i in range(2, 36)]
     (demo_root / "adr.md").write_text("\n".join(adr_lines), encoding="utf-8")
 
     # summary.json
-    summary = {"files": ["wcwidth.py", "table_wide.py"], "elapsed_s": 12, "pass_count": 4}
+    summary = {"files": ["slugify.py", "__init__.py"], "elapsed_s": 12, "pass_count": 4}
     (demo_root / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
 
     # Minimal Python file so pytest finds *something* (no tests — just a module).
-    (after_dir / "wcwidth.py").write_text(
-        "# kaizen recomposed\ndef wcswidth(s): return len(s)\n",
+    (after_dir / "slugify.py").write_text(
+        "# kaizen recomposed\ndef slugify(s): return s.lower().replace(' ', '-')\n",
         encoding="utf-8",
     )
 
-    tarball = dest_dir / "wcwidth_demo.tar.gz"
+    tarball = dest_dir / "slugify_demo.tar.gz"
     with tarfile.open(tarball, "w:gz") as tf:
-        tf.add(scratch / "wcwidth_demo", arcname="wcwidth_demo")
+        tf.add(scratch / "slugify_demo", arcname="slugify_demo")
 
     return tarball
 
@@ -145,18 +145,18 @@ def test_demo_with_cache(
     assert "Step 3/3" in combined
 
     # ADR preview visible (first 30 lines shown; line 31+ truncated).
-    assert "ADR: wcwidth demo" in combined
+    assert "ADR: python-slugify demo" in combined
     assert "see" in combined and "adr.md" in combined  # truncation footer
 
     # summary.json file list visible.
-    assert "wcwidth.py" in combined
+    assert "slugify.py" in combined
 
     # Completion message + CTA visible.
     assert "Demo complete" in combined
     assert "kaizen memsafe-roadmap" in combined
 
     # Extraction happened: adr.md exists on disk.
-    extracted_adr = extract_dir / "wcwidth_demo" / "adr.md"
+    extracted_adr = extract_dir / "slugify_demo" / "adr.md"
     assert extracted_adr.exists(), f"Expected extracted adr.md at {extracted_adr}"
 
 

@@ -57,10 +57,10 @@ def web_command(args: argparse.Namespace) -> int:
         return 2
 
     try:
-        from kaizen_web.server import create_app
-        from kaizen_web.settings import Settings
+        from cli.web_server.server import create_app
+        from cli.web_server.settings import Settings
     except ImportError as exc:
-        output.error(style, f"failed to import kaizen_web: {exc}")
+        output.error(style, f"failed to import cli.web_server: {exc}")
         return 2
 
     settings = Settings.from_env(host=args.host, port=args.port)

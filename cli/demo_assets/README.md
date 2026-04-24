@@ -8,9 +8,9 @@ This directory ships inside the `kaizen-cli` PyPI wheel and is located by
 | File | Status | Description |
 |------|--------|-------------|
 | `__init__.py` | committed | Makes this a Python package so `importlib.resources` can find it |
-| `wcwidth_demo.tar.gz` | **generated** | Pre-recorded kaizen run on `wcwidth` (not yet present) |
+| `slugify_demo.tar.gz` | **generated** | Pre-recorded kaizen run on `python-slugify` (not yet present) |
 
-## Generating `wcwidth_demo.tar.gz`
+## Generating `slugify_demo.tar.gz`
 
 Run (once a real API key is available):
 
@@ -18,19 +18,24 @@ Run (once a real API key is available):
 python scripts/build-demo-cache.py
 ```
 
-> **TODO**: `scripts/build-demo-cache.py` is a forthcoming script. When
-> written it should perform a real `kaizen decompose` + `kaizen recompose`
-> run on the `wcwidth` source, capture the outputs, and produce the tarball
-> below.
+The script clones `https://github.com/un33k/python-slugify` (shallow), runs
+`kaizen decompose` and `kaizen recompose` against the Anthropic API, then
+bundles the outputs into the tarball.
+
+**Pytest harness note:** both the `before/` and `after/` pytest steps are
+invoked with `cwd=<repo_dir>` (the cloned source root for `before/`, the
+recomposed output root for `after/`). pytest automatically prepends `cwd` to
+`sys.path`, so the target package is importable without mutating the current
+venv. No `pip install` of the target package is required.
 
 ## Expected tarball structure
 
 ```
-wcwidth_demo/
+slugify_demo/
   adr.md              # the produced ADR (shown in Step 1)
   transcript.md       # LLM transcript (optional — shown if present)
-  summary.json        # {"files": [...], "elapsed_s": N, "pass_count": M}
-  before/             # original wcwidth source (for reference)
+  summary.json        # {"files": [...], "elapsed_s": N, "pass_count": M, "pass_count_before": X}
+  before/             # original python-slugify source (for reference)
   after/              # post-recompose state — pytest runs against this
 ```
 
@@ -38,18 +43,23 @@ wcwidth_demo/
 
 ```json
 {
-  "files":       ["wcwidth.py", "table_wide.py", ...],
-  "elapsed_s":   42,
-  "pass_count":  28
+  "files":              ["slugify/__init__.py", ...],
+  "elapsed_s":          42,
+  "pass_count":         [N],
+  "pass_count_before":  [M]
 }
 ```
 
-## Why wcwidth?
+The schema keys (`files`, `elapsed_s`, `pass_count`, `pass_count_before`) are
+identical across demo targets — only the file names and counts differ.
 
-- Small and self-contained (~6 files, ~28 tests)
-- Has a real test suite so pytest gives meaningful signal
+## Why python-slugify?
+
+- Small and self-contained (~1 module, ~200 LOC)
+- Clear public API: `slugify()` and `smart_truncate()` — easy to capture in an ADR
+- 50+ deterministic tests covering pure string operations
 - No C extensions — pure Python, installs everywhere
-- Familiar to developers (used by prompt-toolkit, rich, etc.)
+- MIT license
 
 ## Regenerating after a model change
 

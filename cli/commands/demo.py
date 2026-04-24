@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""kaizen demo — offline-first walkthrough of a real kaizen run on wcwidth.
+"""kaizen demo — offline-first walkthrough of a real kaizen run on python-slugify.
 
 Bundles a pre-recorded successful run (ADR + recomposed code + transcript)
-for the `wcwidth` library. Extracts to a temp dir, walks the user through
-what kaizen produced, and runs REAL pytest against the recomposed code.
+for the `python-slugify` library. Extracts to a temp dir, walks the user
+through what kaizen produced, and runs REAL pytest against the recomposed code.
 
 No API key required — the LLM work is pre-recorded. The pytest output is
 live and reflects what kaizen actually generated.
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.resources
+import importlib.util
 import json
 import subprocess
 import sys
@@ -25,7 +26,7 @@ from pathlib import Path
 # Asset location helper
 # ---------------------------------------------------------------------------
 
-_ASSET_NAME = "wcwidth_demo.tar.gz"
+_ASSET_NAME = "slugify_demo.tar.gz"
 
 
 def _find_bundled_asset() -> Path | None:
@@ -63,7 +64,7 @@ def add_demo_parser(subparsers: argparse._SubParsersAction) -> argparse.Argument
         help="Offline walkthrough of a real kaizen run (no API key required)",
         description=(
             "Runs an offline demo of kaizen using a pre-recorded successful run "
-            "on the `wcwidth` library (ADR + recomposed code). "
+            "on the `python-slugify` library (ADR + recomposed code). "
             "The LLM work is pre-recorded; pytest runs live against the "
             "recomposed code so you see real output. Takes ~5 minutes total."
         ),
@@ -127,7 +128,7 @@ def demo_command(args: argparse.Namespace) -> int:
     _print("=" * 70, quiet=quiet)
     _print(quiet=quiet)
     _print(
-        "  Library:   wcwidth (Unicode character-width helper, 6 files, 28 tests)",
+        "  Library:   python-slugify (string-to-slug converter, 1 module, 50+ tests)",
         quiet=quiet,
     )
     _print(
@@ -156,8 +157,8 @@ def demo_command(args: argparse.Namespace) -> int:
     with tarfile.open(asset_path, "r:gz") as tf:
         tf.extractall(tmp_path)  # noqa: S202 — bundled, trusted asset
 
-    # The tarball unpacks to wcwidth_demo/ inside tmp_dir.
-    demo_root = tmp_path / "wcwidth_demo"
+    # The tarball unpacks to slugify_demo/ inside tmp_dir.
+    demo_root = tmp_path / "slugify_demo"
     if not demo_root.exists():
         # Fallback: asset extracted directly (no subdirectory).
         demo_root = tmp_path
@@ -165,7 +166,7 @@ def demo_command(args: argparse.Namespace) -> int:
     # ------------------------------------------------------------------
     # Step 1: Decompose (pre-recorded — show ADR)
     # ------------------------------------------------------------------
-    _print("Step 1/3: Decomposing wcwidth...", quiet=quiet)
+    _print("Step 1/3: Decomposing python-slugify...", quiet=quiet)
     time.sleep(0.8)  # Dramatic pause — shows UX pacing, not faking work.
 
     adr_path = demo_root / "adr.md"
@@ -209,9 +210,11 @@ def demo_command(args: argparse.Namespace) -> int:
         print()
 
     # ------------------------------------------------------------------
-    # Step 3: pytest (live)
+    # Step 3: pytest (live, or pre-recorded fallback)
     # ------------------------------------------------------------------
     _print("Step 3/3: Running pytest against recomposed code...", quiet=quiet)
+
+    _pytest_available = importlib.util.find_spec("pytest") is not None
 
     if no_pytest:
         _print(
@@ -227,7 +230,7 @@ def demo_command(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         pytest_rc = 0
-    else:
+    elif _pytest_available:
         if not quiet:
             print()
             print("-" * 70)
@@ -239,6 +242,35 @@ def demo_command(args: argparse.Namespace) -> int:
         if not quiet:
             print("-" * 70)
             print()
+    else:
+        # pytest not installed — show the pre-recorded log if available.
+        pytest_log = demo_root / "pytest.log"
+        print()
+        print("-" * 70)
+        if pytest_log.exists():
+            print(
+                "Step 3/3: pytest was not installed — showing the pre-recorded test run."
+            )
+            print(
+                "        For a live run: pip install 'kaizen-3c-cli[demo]' then re-run kaizen demo."
+            )
+            print("-" * 70)
+            log_lines = pytest_log.read_text(encoding="utf-8").splitlines()
+            if len(log_lines) > 60:
+                for line in log_lines[-60:]:
+                    print(line)
+            else:
+                for line in log_lines:
+                    print(line)
+        else:
+            print(
+                "pytest unavailable and no pre-recorded log found. "
+                "Install the [demo] extras for the live test run:"
+            )
+            print("  pip install 'kaizen-3c-cli[demo]'")
+        print("-" * 70)
+        print()
+        pytest_rc = 0
 
     # ------------------------------------------------------------------
     # Final summary

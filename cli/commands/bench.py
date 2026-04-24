@@ -6,7 +6,7 @@ Three subcommands:
                                   on a results directory
 - compare --a <dir> --b <dir>   Head-to-head comparison of two architectures'
                                   results
-- commit0 [args]                STUB (v1.0): prints how to run the full sweep
+- commit0                       Informational: how to run the full sweep
                                   via the Kaizen-3C/benchmarks repo
 
 The fingerprint and compare scripts are vendored from the benchmarks repo
@@ -39,7 +39,7 @@ def add_bench_parser(subparsers: argparse._SubParsersAction) -> argparse.Argumen
             "Subcommands:\n"
             "  fingerprint   Compute the value-add fingerprint table for a results dir\n"
             "  compare       Side-by-side comparison of two architectures' results\n"
-            "  commit0       (v1.0 stub) Instructions for running the full sweep\n"
+            "  commit0       Instructions for running the full commit0 sweep upstream\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -98,11 +98,16 @@ def add_bench_parser(subparsers: argparse._SubParsersAction) -> argparse.Argumen
         help="Second results directory (comparison)",
     )
 
-    # --- commit0 (stub) ---
+    # --- commit0 ---
     bench_sub.add_parser(
         "commit0",
-        help="(v1.0 stub) How to run the full commit0 sweep via the benchmarks repo",
-        description="Prints instructions for running the full commit0 benchmark campaign.",
+        help="How to run the full commit0 sweep via the upstream benchmarks repo",
+        description=(
+            "Prints step-by-step instructions for reproducing commit0 benchmark\n"
+            "numbers via the Kaizen-3C/benchmarks repository.\n\n"
+            "After running the sweep, use `kaizen bench fingerprint` and\n"
+            "`kaizen bench compare` to analyse your results."
+        ),
     )
 
     return bench_p
@@ -288,22 +293,41 @@ def _bench_compare(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
-# commit0 (stub)
+# commit0
 # ---------------------------------------------------------------------------
 
 
 def _bench_commit0(_args: argparse.Namespace) -> int:
-    """Print instructions for running the full commit0 sweep."""
+    """Print step-by-step instructions for running the full commit0 sweep."""
     print(
-        "kaizen bench commit0 — currently requires the Kaizen-3C/benchmarks repo\n"
-        "cloned locally. To run the full commit0 sweep:\n"
+        "kaizen bench commit0 -- reproduction via the benchmarks repo\n"
         "\n"
-        "  git clone https://github.com/Kaizen-3C/benchmarks\n"
-        "  cd benchmarks/commit0\n"
-        "  # follow CAMPAIGN_README.md for setup + run instructions\n"
+        "Full-sweep reproduction is done via the upstream benchmarks repository\n"
+        "directly, not through this CLI. The reason: the benchmark runners have\n"
+        "environment conventions (Docker workspace, Python paths, per-architecture\n"
+        "model pins) that the CLI would only paper over, risking divergence from\n"
+        "the published numbers.\n"
         "\n"
-        "Future versions of kaizen-cli may bundle the runner directly. For now,\n"
-        "the analysis-only subcommands (`kaizen bench fingerprint`, `kaizen bench compare`)\n"
-        "are the lightweight CLI-native interface."
+        "Reproduction steps:\n"
+        "\n"
+        "  git clone https://github.com/Kaizen-3C/benchmarks.git ~/kaizen-commit0\n"
+        "  cd ~/kaizen-commit0\n"
+        "  # Follow the README for environment setup, then run baseline scripts:\n"
+        "  python commit0/baselines/run_lite_kaizen_delta.py --provider anthropic\n"
+        "  python commit0/baselines/run_lite_single_shot.py\n"
+        "\n"
+        "Requirements:\n"
+        "  - Docker (commit0 uses containers per library)\n"
+        "  - ANTHROPIC_API_KEY (OPENAI_API_KEY for some baselines)\n"
+        "  - Small sweep (4 libs x 2 archs): ~$4.52, ~22 min\n"
+        "  - Full sweep: ~$30+, hours\n"
+        "\n"
+        "Once you have a results directory, analyse it with:\n"
+        "\n"
+        "  kaizen bench fingerprint --results <dir>\n"
+        "  kaizen bench compare --a <baseline-dir> --b <your-results-dir>\n"
+        "\n"
+        "For the current published baselines and methodology:\n"
+        "  https://github.com/Kaizen-3C/benchmarks"
     )
     return 0

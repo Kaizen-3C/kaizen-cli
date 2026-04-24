@@ -247,11 +247,11 @@ class TestBenchCommit0Stub:
         captured = capsys.readouterr()
         assert "github.com/Kaizen-3C/benchmarks" in captured.out
 
-    def test_mentions_campaign_readme(self, capsys: pytest.CaptureFixture) -> None:
+    def test_mentions_reproduction_steps(self, capsys: pytest.CaptureFixture) -> None:
         ns = _parse(["bench", "commit0"])
         bench_command(ns)
         captured = capsys.readouterr()
-        assert "CAMPAIGN_README.md" in captured.out
+        assert "run_lite_kaizen_delta.py" in captured.out
 
     def test_mentions_fingerprint_and_compare(self, capsys: pytest.CaptureFixture) -> None:
         ns = _parse(["bench", "commit0"])

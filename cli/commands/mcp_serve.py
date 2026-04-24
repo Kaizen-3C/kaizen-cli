@@ -8,7 +8,7 @@ Defaults to stdio transport so Claude Desktop / Cursor / Zed can spawn the
 process directly; `--transport sse` exposes an HTTP surface on a
 configurable port (7866 by default -- one higher than the web UI's 7865).
 
-See `kaizen_mcp/server.py` for the tool set. Startup mirrors `kaizen web`:
+See `cli/mcp_server/server.py` for the tool set. Startup mirrors `kaizen web`:
 the server is constructible without any LLM API key -- keys only matter at
 tool-call time, and the error surfaces in the pipeline subprocess, not
 here.
@@ -99,9 +99,9 @@ def mcp_serve_command(args: argparse.Namespace) -> int:
         return 2
 
     try:
-        from kaizen_mcp.server import create_server
+        from cli.mcp_server.server import create_server
     except ImportError as exc:
-        output.error(style, f"failed to import kaizen_mcp: {exc}")
+        output.error(style, f"failed to import cli.mcp_server: {exc}")
         return 2
 
     _print_banner(style, args.transport, args.host, args.port)
