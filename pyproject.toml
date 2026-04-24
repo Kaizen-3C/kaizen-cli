@@ -1,0 +1,93 @@
+[project]
+name = "kaizen-3c-cli"
+version = "1.0.0"
+description = "Compliance-driven modernization engine. Decompose legacy codebases into editable ADRs, recompose to modern stacks, audit trail included."
+readme = "README.pypi.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+    { name = "A. Adame" },
+]
+keywords = [
+    "modernization",
+    "legacy",
+    "refactoring",
+    "rust",
+    "memory-safety",
+    "cisa",
+    "architecture",
+    "adr",
+    "ai-code",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Security",
+]
+dependencies = [
+    # anthropic 0.87.0 fixes GHSA-q5f5-3gjm-7mfm + GHSA-w828-4qhx-vxx3
+    # (see pip-audit output before v0.3.0 release).
+    "anthropic>=0.87.0",
+    "openai>=1.0.0",
+    "httpx>=0.27.0",
+    # Cross-platform user-config-dir resolution for cli/config.py (v0.4.0).
+    "platformdirs>=4.0.0",
+]
+
+[project.optional-dependencies]
+demo = [
+    "pytest>=7.0",
+]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+]
+web = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.0.0",
+    "sse-starlette>=2.0.0",
+]
+# MCP server — expose kaizen as an MCP tool provider so Claude Desktop,
+# Cursor, Zed, etc. can invoke kaizen's pipeline commands directly. See
+# docs/CLI_ROADMAP.md v0.5.0.
+mcp = [
+    "mcp>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://kaizen-3c.dev"
+Repository = "https://github.com/Kaizen-3C/kaizen-cli"
+Issues = "https://github.com/Kaizen-3C/kaizen-cli/issues"
+Documentation = "https://github.com/Kaizen-3C/kaizen-cli#readme"
+
+[project.scripts]
+kaizen = "cli.main:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["cli*"]
+
+[tool.setuptools.package-data]
+cli = ["py.typed"]
+"cli.pipeline" = ["*.py"]
+"cli.bench" = ["*.py"]
+"cli.demo_assets" = ["*.tar.gz", "*.zip", "README.md"]
+"cli.web_server" = ["static/**/*"]
+
+[tool.setuptools]
+include-package-data = true
+license-files = ["LICENSE", "NOTICE"]

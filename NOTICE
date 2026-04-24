@@ -1,0 +1,119 @@
+Kaizen-3C / kaizen-cli
+======================
+
+This software is published as part of the Kaizen-3C project
+(https://kaizen-3c.dev), a software-industry reframe of the original
+Kaizen 3C method (Concern, Cause, Countermeasure) as Code, Compose,
+and Compliance.
+
+This repository contains the open-source CLI core of the Kaizen-3C
+toolchain. See https://kaizen-3c.dev for the fuller brand, feature
+tiers, and legal structure.
+
+
+Copyright and authorship
+------------------------
+
+Copyright (c) 2026 Anthony Adame (https://kaizen-3c.dev)
+
+All source files and documents in this repository are copyright their
+respective authors as identified in each file's license notice. The
+primary author is Anthony Adame.
+
+"Kaizen-3C" is the project brand and the GitHub organization name. It
+is NOT, as of this NOTICE's date, a registered legal entity. Copyright
+in the work published here is held by the named human author(s), not
+by the brand. When a successor legal entity is formed to receive the
+project's intellectual property, copyrights will be assigned to that
+entity by written instrument, and updated NOTICE language will reflect
+the new chain of title.
+
+
+License
+-------
+
+This work is licensed under the Apache License, Version 2.0
+(see LICENSE). You may obtain a copy of the License at:
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+
+Upstream acknowledgments
+------------------------
+
+The following upstream projects are used by this software. Apache-2.0
+and MPL-2.0 licensed dependencies are specifically called out here as
+their licenses request attribution in NOTICE files. MIT/BSD-licensed
+dependencies are listed for completeness but attribution is not
+required by their licenses.
+
+Apache-2.0 licensed (attribution required in NOTICE):
+
+- Anthropic Python SDK (https://github.com/anthropic-ai/anthropic-sdk-python)
+  Copyright (c) Anthropic, PBC.
+  Licensed under the Apache License, Version 2.0.
+  Used for: Claude API integration in the kaizen pipeline.
+
+- OpenAI Python SDK (https://github.com/openai/openai-python)
+  Copyright (c) OpenAI.
+  Licensed under the Apache License, Version 2.0.
+  Used for: optional OpenAI-compatible model backend.
+
+- FastAPI (https://github.com/tiangolo/fastapi)
+  Copyright (c) Sebastian Ramirez.
+  Licensed under the MIT License.
+  (Listed for completeness; MIT does not require NOTICE attribution.)
+
+- MCP SDK (https://github.com/modelcontextprotocol/python-sdk)
+  Copyright (c) Anthropic, PBC.
+  Licensed under the MIT License.
+  (Listed for completeness; MIT does not require NOTICE attribution.)
+
+MIT/BSD licensed (listed for completeness):
+
+- httpx (https://github.com/encode/httpx)
+  Copyright (c) Encode OSS Ltd.
+  Licensed under the BSD License.
+
+- platformdirs (https://github.com/platformdirs/platformdirs)
+  Copyright (c) platformdirs contributors.
+  Licensed under the MIT License.
+
+- Pydantic (https://github.com/pydantic/pydantic)
+  Copyright (c) Samuel Colvin and contributors.
+  Licensed under the MIT License.
+
+- uvicorn (https://github.com/encode/uvicorn)
+  Copyright (c) Encode OSS Ltd.
+  Licensed under the BSD License.
+
+- sse-starlette (https://github.com/sysid/sse-starlette)
+  Copyright (c) sysid and contributors.
+  Licensed under the BSD License.
+
+These projects retain their own copyrights and licenses; this NOTICE
+does not modify them.
+
+
+Trademarks
+----------
+
+"Kaizen-3C" and the Kaizen-3C logo (when published) are trademarks of
+Anthony Adame, used in connection with the Kaizen-3C project. The
+`kaizen` shell command name is part of this project's user interface.
+All other trademarks are the property of their respective owners.
+
+
+Commercial features
+-------------------
+
+Commercial and enterprise features of the Kaizen-3C platform are
+separate from this open-source CLI core. For licensing, partnership,
+or enterprise-tier conversations, contact hello@kaizen-3c.dev.
+
+
+Security disclosures
+--------------------
+
+For security vulnerability reports, see SECURITY.md or contact
+security@kaizen-3c.dev directly.
