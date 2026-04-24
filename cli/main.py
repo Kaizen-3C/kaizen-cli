@@ -80,7 +80,7 @@ def _build_parser() -> argparse.ArgumentParser:
     add_demo_parser(subparsers)
 
     # version subcommand kept for backwards compat with Sprint 1
-    subparsers.add_parser("version", help="Print the kaizen-cli version and exit")
+    subparsers.add_parser("version", help="Print the kaizen-3c-cli version and exit")
 
     return parser
 

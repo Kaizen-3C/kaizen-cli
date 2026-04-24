@@ -21,7 +21,7 @@ class Settings:
     port: int = DEFAULT_PORT
     # Where to resolve the pre-built SPA static bundle. When running from a
     # source checkout the bundle lives at `ui-lite/dist`; when installed via
-    # `pip install kaizen-cli[web]` it is packaged alongside this module at
+    # `pip install kaizen-3c-cli[web]` it is packaged alongside this module at
     # `kaizen_web/static`. The server tries both and serves whichever exists.
     static_candidates: tuple[Path, ...] = ()
     # Hard cap on sync request time before the server responds with 504.

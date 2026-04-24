@@ -114,7 +114,7 @@ def demo_command(args: argparse.Namespace) -> int:
     asset_path = _find_bundled_asset()
 
     if asset_path is None:
-        print("Demo asset not bundled in this build of kaizen-cli.")
+        print("Demo asset not bundled in this build of kaizen-3c-cli.")
         print(
             "To generate the demo cache, see scripts/build-demo-cache.py (forthcoming)."
         )

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # VENDORED FROM: Kaizen-3C/benchmarks/commit0/baselines/value_add_fingerprint.py
-# Sync manually; kept self-contained so `pip install kaizen-cli` works without
+# Sync manually; kept self-contained so `pip install kaizen-3c-cli` works without
 # requiring a separate clone of the benchmarks repo.
 """Value-add architectural fingerprint table.
 

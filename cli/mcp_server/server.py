@@ -424,7 +424,7 @@ def create_server() -> "FastMCP":
     if FastMCP is None:
         raise ImportError(
             "cli.mcp_server.server requires the [mcp] optional dependency group. "
-            "Install it with:  pip install 'kaizen-cli[mcp]'"
+            "Install it with:  pip install 'kaizen-3c-cli[mcp]'"
         ) from _MCP_IMPORT_ERROR
 
     server = FastMCP(
@@ -523,7 +523,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     if FastMCP is None:
         print(
             "error: cli.mcp_server requires the [mcp] optional dependency group.\n"
-            "       Install it with:  pip install 'kaizen-cli[mcp]'",
+            "       Install it with:  pip install 'kaizen-3c-cli[mcp]'",
             flush=True,
         )
         return 2

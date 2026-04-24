@@ -35,7 +35,7 @@ def test_healthz(client: TestClient) -> None:
 def test_version_matches_cli(client: TestClient) -> None:
     r = client.get("/api/version")
     assert r.status_code == 200
-    assert r.json() == {"version": __version__, "name": "kaizen-cli"}
+    assert r.json() == {"version": __version__, "name": "kaizen-3c-cli"}
 
 
 def test_providers_lists_all(client: TestClient) -> None:

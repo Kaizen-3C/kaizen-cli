@@ -127,7 +127,7 @@ def _prompt(prompt_text: str, default: str, non_interactive: bool) -> str:
 def _run_wizard(*, non_interactive: bool) -> int:
     """Core wizard; returns exit code."""
     # Banner
-    print(f"Welcome to kaizen-cli {__version__}. Let's configure a default provider.")
+    print(f"Welcome to kaizen-3c-cli {__version__}. Let's configure a default provider.")
     print()
 
     cfg_path = _config.config_path()

@@ -40,7 +40,7 @@ def create_app(settings: Settings | None = None) -> "FastAPI":
     except ImportError as exc:  # pragma: no cover — exercised in non-[web] installs
         raise RuntimeError(
             "kaizen web requires the [web] optional dependency group. "
-            "Install it with:  pip install 'kaizen-cli[web]'"
+            "Install it with:  pip install 'kaizen-3c-cli[web]'"
         ) from exc
 
     settings = settings or Settings.from_env()
@@ -48,7 +48,7 @@ def create_app(settings: Settings | None = None) -> "FastAPI":
     app = FastAPI(
         title="kaizen web",
         version=__import__("cli.web_server", fromlist=["__version__"]).__version__,
-        description="Lite web UI for kaizen-cli. Developer-local tool; no authentication.",
+        description="Lite web UI for kaizen-3c-cli. Developer-local tool; no authentication.",
         docs_url="/api/docs",
         redoc_url=None,
         openapi_url="/api/openapi.json",

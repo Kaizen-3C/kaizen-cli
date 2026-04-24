@@ -2,7 +2,7 @@
 """`kaizen web` — start the lite web UI (FastAPI + optional SPA bundle).
 
 Requires the `[web]` optional dependency group:
-    pip install 'kaizen-cli[web]'
+    pip install 'kaizen-3c-cli[web]'
 
 Runs uvicorn on 127.0.0.1:7865 by default. See
 `docs/release/UI_LITE_CARVE_OUT.md` for the full design.
@@ -21,7 +21,7 @@ from ..output import Style
 def add_web_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     p = subparsers.add_parser(
         "web",
-        help="Start the lite web UI (requires `pip install 'kaizen-cli[web]'`)",
+        help="Start the lite web UI (requires `pip install 'kaizen-3c-cli[web]'`)",
         description=(
             "Start the kaizen lite web UI: a local FastAPI server that surfaces the "
             "same pipeline capabilities as the CLI, via a browser. Dev-local tool with "
@@ -52,7 +52,7 @@ def web_command(args: argparse.Namespace) -> int:
         output.error(
             style,
             "kaizen web requires the [web] optional dependency group. "
-            "Install it with:  pip install 'kaizen-cli[web]'",
+            "Install it with:  pip install 'kaizen-3c-cli[web]'",
         )
         return 2
 
@@ -76,7 +76,7 @@ def web_command(args: argparse.Namespace) -> int:
     if static_dir is None:
         print(style.dim(
             "  (no ui-lite SPA bundle found; serving API only. Build ui-lite/ and "
-            "re-run, or `pip install kaizen-cli[web]` from a wheel that bundles it.)"
+            "re-run, or `pip install kaizen-3c-cli[web]` from a wheel that bundles it.)"
         ), file=sys.stderr)
 
     url = f"http://{settings.host}:{settings.port}/"

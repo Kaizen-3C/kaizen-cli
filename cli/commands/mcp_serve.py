@@ -2,7 +2,7 @@
 """`kaizen mcp-serve` -- run the MCP server that exposes pipeline tools.
 
 Requires the `[mcp]` optional dependency group:
-    pip install 'kaizen-cli[mcp]'
+    pip install 'kaizen-3c-cli[mcp]'
 
 Defaults to stdio transport so Claude Desktop / Cursor / Zed can spawn the
 process directly; `--transport sse` exposes an HTTP surface on a
@@ -26,7 +26,7 @@ from ..output import Style
 def add_mcp_serve_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     p = subparsers.add_parser(
         "mcp-serve",
-        help="Run the kaizen Model Context Protocol server (requires `pip install 'kaizen-cli[mcp]'`)",
+        help="Run the kaizen Model Context Protocol server (requires `pip install 'kaizen-3c-cli[mcp]'`)",
         description=(
             "Start an MCP server that exposes kaizen's pipeline commands (decompose, "
             "recompose, memsafe-roadmap, migrate-plan) as tools for MCP-capable AI "
@@ -94,7 +94,7 @@ def mcp_serve_command(args: argparse.Namespace) -> int:
         output.error(
             style,
             "kaizen mcp-serve requires the [mcp] optional dependency group. "
-            "Install it with:  pip install 'kaizen-cli[mcp]'",
+            "Install it with:  pip install 'kaizen-3c-cli[mcp]'",
         )
         return 2
 
