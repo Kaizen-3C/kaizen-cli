@@ -37,11 +37,10 @@ to `kaizen-3c-cli`. The shell command stays `kaizen`.
 
 ### Deferred to v1.1
 
-`kaizen bench reproduce` (ADR/design at docs/launch/BENCH_REPRODUCE_DESIGN.md)
-was scoped and prototyped during W2 but deferred to v1.1. The benchmarks
-repository at https://github.com/Kaizen-3C/benchmarks remains the canonical
-path for reproduction; `kaizen bench commit0` now prints an informational
-pointer to it with exact steps and requirements.
+`kaizen bench reproduce` was scoped and prototyped during W2 but deferred
+to v1.1. The benchmarks repository at https://github.com/Kaizen-3C/benchmarks
+remains the canonical path for reproduction; `kaizen bench commit0` now
+prints an informational pointer to it with exact steps and requirements.
 
 ### Added
 
@@ -57,7 +56,7 @@ pointer to it with exact steps and requirements.
 ## [0.4.0] - 2026-04-22
 
 Second release. Adds config-dir + first-run wizard + resume + adversarial LLM
-review + approval prompt (v0.4.0 per `docs/CLI_ROADMAP.md`) and ships the
+review + approval prompt and ships the
 **MCP server** as the v0.5.0 headline — kaizen is now callable as a tool from
 Claude Desktop, Cursor, Zed, and any other MCP-capable client. Python floor
 bumped to 3.10+.
@@ -144,7 +143,7 @@ Pre-existing suites (events, wedge routes, SSE) unchanged and still green.
 - `kaizen run` — remains in dev repo only (requires `agents/src/` transitive
   closure; see v0.3.0 notes).
 - Standalone binary, translated READMEs, interactive TUI — tracked in
-  [`docs/CLI_ROADMAP.md`](docs/CLI_ROADMAP.md) for later releases.
+  the internal CLI roadmap for later releases.
 
 ---
 
@@ -193,27 +192,19 @@ with the Kaizen Enterprise Commercial License (see ADR-0053).
 - Live progress streaming: every long-running wedge/pipeline call renders
   stage-by-stage in the browser via SSE.
 
-#### Documentation & Release Tooling
+#### Documentation & Release Tooling (internal)
 
-- `docs/release/PUBLIC_REPO_ALLOWLIST.md` — authoritative allow/deny list
-  with 10 invariants + per-release audit checklist.
-- `docs/release/RELEASE_PROCESS.md` — 10-step maintainer runbook.
-- `docs/release/UI_LITE_CARVE_OUT.md` — web UI design + per-page lift/rewrite
-  plan + Commercial bright-line contract.
-- `scripts/release/export-public.py` — allowlist-driven seed exporter with
-  `--dry-run`, `--verify`, invariant audit.
-- `scripts/release/bundle-spa.py` — SPA build + wheel-bundle helper.
-- `scripts/release/sync-public.py` — per-release delta → public sync (stub in
-  v0.3.0; fleshed out in a follow-up).
+Release tooling + the allowlist-driven public-extract pipeline live in the
+upstream monorepo and are not shipped in this repo. Public users consume
+the released wheel on PyPI; contributors see the Apache-2.0 source here.
 
 ### Dual-license boundary (ADR-0053)
 
-Apache-2.0 covers `cli/`, `kaizen_web/`, `ui-lite/`, and `docs/` published
-surfaces. The Kaizen Enterprise Commercial License covers `interface/`
-(.NET + React Commercial UI with multi-tenancy, auth, audit-log, approval
-workflows, cost attribution) and remains in the private `kaizen-delta` dev
-repo. See `docs/CLI_VS_UI_CAPABILITY_REVIEW.md` for the per-file audit and
-`docs/commercial/FEATURE_MATRIX.md` for the tier breakdown.
+Apache-2.0 covers the public CLI + web + MCP surfaces shipped here. The
+Kaizen Enterprise Commercial License covers the .NET + React Commercial UI
+(multi-tenancy, auth, audit-log, approval workflows, cost attribution) which
+lives in a separate private repo. See `NOTICE` for the tier summary and
+contact hello@kaizen-3c.dev for the commercial surface.
 
 ### Not shipped in v0.3.0
 
@@ -228,12 +219,13 @@ repo. See `docs/CLI_VS_UI_CAPABILITY_REVIEW.md` for the per-file audit and
 
 ### Case studies (reproducible)
 
-- [`docs/case-studies/memsafe-01-inih/`](docs/case-studies/memsafe-01-inih/README.md)
-  — C → Rust, 522 LOC. One-shot LLM: 6 `cargo check` errors. Plain ADR
-  pipeline: 1 error. ADR + memory-safe domain schema: **0 errors**.
-- [`docs/case-studies/framework-01-nancy-context/`](docs/case-studies/framework-01-nancy-context/README.md)
-  — .NET Fx → .NET 8, 148 LOC. One-shot: 14 `dotnet build` errors. Plain ADR
-  pipeline: **0 errors**.
+Case-study writeups live in the upstream monorepo alongside source artifacts:
+
+- **memsafe-01-inih** — C → Rust, 522 LOC. One-shot LLM: 6 `cargo check`
+  errors. Plain ADR pipeline: 1 error. ADR + memory-safe domain schema:
+  **0 errors**.
+- **framework-01-nancy-context** — .NET Fx → .NET 8, 148 LOC. One-shot:
+  14 `dotnet build` errors. Plain ADR pipeline: **0 errors**.
 
 ---
 

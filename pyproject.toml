@@ -60,7 +60,7 @@ web = [
 ]
 # MCP server — expose kaizen as an MCP tool provider so Claude Desktop,
 # Cursor, Zed, etc. can invoke kaizen's pipeline commands directly. See
-# docs/CLI_ROADMAP.md v0.5.0.
+# New optional extras group for the MCP server (v0.5.0).
 mcp = [
     "mcp>=1.0.0",
 ]

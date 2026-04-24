@@ -74,7 +74,7 @@ Honest results on the cached run: `python-slugify`'s own test suite shows **82 p
 
 ## Why another AI CLI?
 
-Honest feature comparison against adjacent tools. None of these are "better than" verdicts — they describe what each tool does and doesn't do in its current form. Sourced from the `docs/CLI_ROADMAP.md` gap analysis.
+Honest feature comparison against adjacent tools. None of these are "better than" verdicts — they describe what each tool does and doesn't do in its current form.
 
 | Axis | kaizen-cli | OpenHands-CLI | Aider | Cursor |
 |---|:-:|:-:|:-:|:-:|
