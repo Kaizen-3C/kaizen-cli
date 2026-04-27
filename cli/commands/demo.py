@@ -236,6 +236,7 @@ def demo_command(args: argparse.Namespace) -> int:
             print("-" * 70)
         result = subprocess.run(
             [sys.executable, "-m", "pytest", str(after_dir), "-v"],
+            cwd=str(after_dir),
             capture_output=False,
         )
         pytest_rc = result.returncode
