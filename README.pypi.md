@@ -8,9 +8,15 @@
 pip install "kaizen-3c-cli[demo]"
 ```
 
+> **Windows users:** install inside WSL (Ubuntu/Debian recommended). Native Windows is not a supported target.
+
 `[demo]` is recommended for the full demo experience — it pulls in `pytest` so `kaizen demo`'s Step 3 runs live; the bare `pip install kaizen-3c-cli` still works but prints the pre-recorded test output instead.
 
-Requires Python 3.10+.
+Requires Python 3.10+. You will also need:
+
+- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in your environment (or a local `.env` file) for LLM-backed commands.
+- Rust toolchain (`cargo`) if using `--recompose` for C/C++ → Rust memory-safety work.
+- .NET SDK (`dotnet`) if using `--recompose` for framework-migration work targeting .NET 8.
 
 ## Try it
 
@@ -61,6 +67,10 @@ Baseline (original `python-slugify`): 82 passing. Recomposed: 33 of 34 passing �
 - Project homepage: https://kaizen-3c.dev
 - Commercial tier (signed ADRs, audit-log export, multi-tenant): hello@kaizen-3c.dev
 - Security disclosures: security@kaizen-3c.dev
+
+## Status
+
+**1.0.0 — Alpha.** CLI subcommands `memsafe-roadmap`, `migrate-plan`, `run`, `priors`, `status` are end-to-end. PyPI package bundles the pipeline scripts via sdist for now; Phase C will move them under `cli/pipeline/` as a proper subpackage.
 
 ## License
 

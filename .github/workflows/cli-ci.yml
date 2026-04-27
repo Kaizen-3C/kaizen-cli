@@ -1,0 +1,53 @@
+name: CLI cross-OS smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: smoke (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.10', '3.13']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install kaizen-3c-cli (editable, demo + dev extras)
+        run: pip install -e .[demo,dev]
+
+      - name: Tier 0.2 — kaizen --version
+        run: kaizen --version
+
+      - name: Tier 0.3 — kaizen --help
+        run: kaizen --help
+
+      - name: Tier 0.4 — kaizen demo (python-slugify e2e)
+        timeout-minutes: 5
+        run: kaizen demo
+
+      # cli/tests/ exists in this repo — run pytest
+      - name: pytest cli/tests/
+        run: pytest cli/tests/
