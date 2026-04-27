@@ -2,8 +2,10 @@
 """`kaizen init` -- first-run configuration wizard.
 
 Interactively prompts the user for preferred provider, model, output paths,
-and pipeline settings, then writes ``~/.kaizen/config.toml`` (platform path
-via ``cli.config``).
+and pipeline settings, then writes ``config.toml`` to the platform-appropriate
+user-config dir (resolved via ``cli.config`` / ``platformdirs``):
+Linux ``~/.config/kaizen/``, macOS ``~/Library/Application Support/kaizen/``,
+Windows ``%LOCALAPPDATA%\\kaizen\\``.
 
 Flags:
     --non-interactive   Use all defaults without prompting (CI-safe).
@@ -53,7 +55,7 @@ _PROVIDER_DEFAULT_MODELS: dict[str, str] = {
 def add_init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     p = subparsers.add_parser(
         "init",
-        help="Run the first-run configuration wizard (writes ~/.kaizen/config.toml)",
+        help="Run the first-run configuration wizard (writes config.toml to your platform user-config dir)",
         description=(
             "Interactive setup wizard. Prompts for provider, model, output paths, "
             "and pipeline settings, then writes the kaizen config file. "
