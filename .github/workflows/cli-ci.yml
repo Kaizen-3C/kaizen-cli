@@ -18,7 +18,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # macos-latest = arm64 (Apple Silicon); macos-13 = x86_64 (Intel,
+        # GHA's last Intel image — used here as a one-time pre-launch Intel
+        # validation, not a long-term commitment).
+        os: [ubuntu-latest, macos-latest, macos-13]
         python-version: ['3.10', '3.13']
 
     steps:
