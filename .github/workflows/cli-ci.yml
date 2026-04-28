@@ -18,10 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # macos-latest = arm64 (Apple Silicon); macos-13 = x86_64 (Intel,
-        # GHA's last Intel image — used here as a one-time pre-launch Intel
-        # validation, not a long-term commitment).
-        os: [ubuntu-latest, macos-latest, macos-13]
+        # macos-latest is arm64 (Apple Silicon). GHA's macos-13 (Intel)
+        # runner pool was unreliable as of 2026-04-28 (jobs queued >7h
+        # without starting); skipping Intel coverage. The wheel is
+        # py3-none-any so there are no arch-specific code paths anyway.
+        os: [ubuntu-latest, macos-latest]
         python-version: ['3.10', '3.13']
 
     steps:
