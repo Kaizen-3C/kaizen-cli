@@ -59,13 +59,7 @@ The open-core boundary is explicit and enumerated in [ADR-0053](.architecture/de
 - [Quickstart](quickstart.md)
 - [CLI guide](docs/CLI_GUIDE.md) — task-focused walkthrough of every command + the lite web UI
 - [CLI reference](cli/README.md) — full flag reference
-- [Strategic roadmap](STRATEGIC_ROADMAP.md) — where this is going
 - [Case studies](docs/case-studies/) — reproducible measurements
-- [Feature matrix — OSS vs Commercial](docs/commercial/FEATURE_MATRIX.md)
-- [Pricing](docs/commercial/PRICING.md)
-- [Memory-safety wedge rationale](docs/markets/MEMORY_SAFETY_WEDGE.md)
-- [Framework-modernization wedge rationale](docs/markets/FRAMEWORK_MODERNIZATION_WEDGE.md)
-- [Competitive positioning](docs/markets/COMPETITIVE_ANALYSIS_2026.md)
 
 ## Contributing
 
