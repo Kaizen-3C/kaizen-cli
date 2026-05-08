@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.1] - 2026-05-08
+
+### Added
+
+- **Standalone binaries** for Windows x64, macOS x64, macOS arm64, and Linux x64
+  attached to every GitHub Release. No Python required for winget, npm, or Homebrew installs.
+- **winget** package `Kaizen3C.KaizenCLI` — `winget install Kaizen3C.KaizenCLI`.
+- **npm** package `kaizen-3c-cli` — `npm install -g kaizen-3c-cli`.
+- **Homebrew tap** `Kaizen-3C/tap` — `brew tap Kaizen-3C/tap && brew install kaizen-cli`.
+- **pipx / uv** install snippets documented in README and README.pypi.md.
+- `scripts/release/update-manifests.py` — automates winget PR to `microsoft/winget-pkgs`
+  and Homebrew formula push to `Kaizen-3C/homebrew-tap` after each release.
+
+### Fixed
+
+- npm postinstall no longer hard-fails on download errors; warns and exits 0
+  so `npm install` always succeeds even if the binary fetch is temporarily unavailable.
+
 ## [1.0.0] - 2026-04-23
 
 First public release on PyPI as `kaizen-3c-cli`, published from the public
@@ -37,10 +55,11 @@ to `kaizen-3c-cli`. The shell command stays `kaizen`.
 
 ### Deferred to v1.1
 
-`kaizen bench reproduce` was scoped and prototyped during W2 but deferred
-to v1.1. The benchmarks repository at https://github.com/Kaizen-3C/benchmarks
-remains the canonical path for reproduction; `kaizen bench commit0` now
-prints an informational pointer to it with exact steps and requirements.
+`kaizen bench reproduce` (ADR/design at docs/launch/BENCH_REPRODUCE_DESIGN.md)
+was scoped and prototyped during W2 but deferred to v1.1. The benchmarks
+repository at https://github.com/Kaizen-3C/benchmarks remains the canonical
+path for reproduction; `kaizen bench commit0` now prints an informational
+pointer to it with exact steps and requirements.
 
 ### Added
 
@@ -56,7 +75,7 @@ prints an informational pointer to it with exact steps and requirements.
 ## [0.4.0] - 2026-04-22
 
 Second release. Adds config-dir + first-run wizard + resume + adversarial LLM
-review + approval prompt and ships the
+review + approval prompt (v0.4.0 per `docs/CLI_ROADMAP.md`) and ships the
 **MCP server** as the v0.5.0 headline — kaizen is now callable as a tool from
 Claude Desktop, Cursor, Zed, and any other MCP-capable client. Python floor
 bumped to 3.10+.
@@ -78,7 +97,7 @@ bumped to 3.10+.
   `list_runs`, `read_adr`. Tool handlers call the same Python functions the
   CLI uses, so every surface stays in lockstep. Transport: stdio (default,
   for Claude Desktop) or SSE (`--transport sse --port 7866`). Requires
-  `pip install 'kaizen-3c-cli[mcp]'`.
+  `pip install 'kaizen-cli[mcp]'`.
 
 #### CLI flags on existing pipeline commands
 
@@ -143,13 +162,13 @@ Pre-existing suites (events, wedge routes, SSE) unchanged and still green.
 - `kaizen run` — remains in dev repo only (requires `agents/src/` transitive
   closure; see v0.3.0 notes).
 - Standalone binary, translated READMEs, interactive TUI — tracked in
-  the internal CLI roadmap for later releases.
+  [`docs/CLI_ROADMAP.md`](docs/CLI_ROADMAP.md) for later releases.
 
 ---
 
 ## [0.3.0] - 2026-04-21
 
-First public release — `pip install kaizen-3c-cli`. Apache-2.0 core, dual-licensed
+First public release — `pip install kaizen-cli`. Apache-2.0 core, dual-licensed
 with the Kaizen Enterprise Commercial License (see ADR-0053).
 
 ### Added
@@ -172,13 +191,13 @@ with the Kaizen Enterprise Commercial License (see ADR-0053).
 - `kaizen status [--path]` — summarize recent Kaizen runs in a directory.
 - `kaizen priors show|reset [--path]` — inspect / reset Thompson priors files.
 - `kaizen web [--port] [--host] [--open]` — start the lite web UI on
-  `127.0.0.1:7865`. Requires `pip install 'kaizen-3c-cli[web]'`.
+  `127.0.0.1:7865`. Requires `pip install 'kaizen-cli[web]'`.
 - Structured progress events via `cli.events` — CLI prints human-readable
   lines by default; `KAIZEN_EVENT_STREAM=ndjson` switches to NDJSON for
   `jq` / CI log ingestion. Wedge commands emit
   `run.start` / `stage` / `detail` / `stage.done` / `result` events.
 
-#### Web UI (`kaizen-3c-cli[web]`, optional)
+#### Web UI (`kaizen-cli[web]`, optional)
 
 - FastAPI backend at `kaizen_web/` — 11 routes over the CLI surface. Blocking
   and SSE variants for all four pipeline commands (decompose, recompose,
@@ -192,19 +211,27 @@ with the Kaizen Enterprise Commercial License (see ADR-0053).
 - Live progress streaming: every long-running wedge/pipeline call renders
   stage-by-stage in the browser via SSE.
 
-#### Documentation & Release Tooling (internal)
+#### Documentation & Release Tooling
 
-Release tooling + the allowlist-driven public-extract pipeline live in the
-upstream monorepo and are not shipped in this repo. Public users consume
-the released wheel on PyPI; contributors see the Apache-2.0 source here.
+- `docs/release/PUBLIC_REPO_ALLOWLIST.md` — authoritative allow/deny list
+  with 10 invariants + per-release audit checklist.
+- `docs/release/RELEASE_PROCESS.md` — 10-step maintainer runbook.
+- `docs/release/UI_LITE_CARVE_OUT.md` — web UI design + per-page lift/rewrite
+  plan + Commercial bright-line contract.
+- `scripts/release/export-public.py` — allowlist-driven seed exporter with
+  `--dry-run`, `--verify`, invariant audit.
+- `scripts/release/bundle-spa.py` — SPA build + wheel-bundle helper.
+- `scripts/release/sync-public.py` — per-release delta → public sync (stub in
+  v0.3.0; fleshed out in a follow-up).
 
 ### Dual-license boundary (ADR-0053)
 
-Apache-2.0 covers the public CLI + web + MCP surfaces shipped here. The
-Kaizen Enterprise Commercial License covers the .NET + React Commercial UI
-(multi-tenancy, auth, audit-log, approval workflows, cost attribution) which
-lives in a separate private repo. See `NOTICE` for the tier summary and
-contact hello@kaizen-3c.dev for the commercial surface.
+Apache-2.0 covers `cli/`, `kaizen_web/`, `ui-lite/`, and `docs/` published
+surfaces. The Kaizen Enterprise Commercial License covers `interface/`
+(.NET + React Commercial UI with multi-tenancy, auth, audit-log, approval
+workflows, cost attribution) and remains in the private `kaizen-delta` dev
+repo. See `docs/CLI_VS_UI_CAPABILITY_REVIEW.md` for the per-file audit and
+`docs/commercial/FEATURE_MATRIX.md` for the tier breakdown.
 
 ### Not shipped in v0.3.0
 
@@ -219,13 +246,12 @@ contact hello@kaizen-3c.dev for the commercial surface.
 
 ### Case studies (reproducible)
 
-Case-study writeups live in the upstream monorepo alongside source artifacts:
-
-- **memsafe-01-inih** — C → Rust, 522 LOC. One-shot LLM: 6 `cargo check`
-  errors. Plain ADR pipeline: 1 error. ADR + memory-safe domain schema:
-  **0 errors**.
-- **framework-01-nancy-context** — .NET Fx → .NET 8, 148 LOC. One-shot:
-  14 `dotnet build` errors. Plain ADR pipeline: **0 errors**.
+- [`docs/case-studies/memsafe-01-inih/`](docs/case-studies/memsafe-01-inih/README.md)
+  — C → Rust, 522 LOC. One-shot LLM: 6 `cargo check` errors. Plain ADR
+  pipeline: 1 error. ADR + memory-safe domain schema: **0 errors**.
+- [`docs/case-studies/framework-01-nancy-context/`](docs/case-studies/framework-01-nancy-context/README.md)
+  — .NET Fx → .NET 8, 148 LOC. One-shot: 14 `dotnet build` errors. Plain ADR
+  pipeline: **0 errors**.
 
 ---
 

@@ -1,113 +1,118 @@
-# kaizen-cli
+# Kaizen
 
-[![PyPI version](https://img.shields.io/pypi/v/kaizen-3c-cli.svg)](https://pypi.org/project/kaizen-3c-cli/)
-[![Python versions](https://img.shields.io/pypi/pyversions/kaizen-3c-cli.svg)](https://pypi.org/project/kaizen-3c-cli/)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+**Architecture-driven modernization. Audit trail ships by default.** Decompose legacy codebases into editable ADRs, recompose to modern stacks — compliance falls out of doing the architecture right, not bolted on after.
 
-**Architecture-first AI for software modernization. Planning leads, code follows — every decision cited to `file:line`, reviewable as an ADR before a line of target code is written.**
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.md)
+[![License: Commercial](https://img.shields.io/badge/Enterprise-Kaizen_Commercial-orange.svg)](LICENSE-COMMERCIAL.md)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+![Status](https://img.shields.io/badge/status-public%20beta-blue)
+
+## Install
+
+| Method | Command |
+|---|---|
+| **winget** (Windows) | `winget install Kaizen3C.KaizenCLI` |
+| **npm** | `npm install -g kaizen-cli` |
+| **Homebrew** (macOS/Linux) | `brew tap Kaizen-3C/tap && brew install kaizen-cli` |
+| **pipx** (Python, recommended) | `pipx install kaizen-3c-cli` |
+| **uv** | `uv tool install kaizen-3c-cli` |
+| **pip** | `pip install kaizen-3c-cli` |
+
+winget, npm, and Homebrew install a standalone binary (no Python required). pipx/uv/pip install the full package including `[web]` and `[mcp]` extras.
 
 ```bash
-pip install "kaizen-3c-cli[demo]"
-kaizen demo
+export ANTHROPIC_API_KEY=...     # or OPENAI_API_KEY, or a local Ollama host
+kaizen memsafe-roadmap ./my-c-lib --output roadmap.md
 ```
 
-`[demo]` is recommended for the full experience — it pulls in `pytest` so Step 3 runs live against the recomposed code; the bare `pip install kaizen-3c-cli` still works but prints the pre-recorded test output instead.
+## Does it work? — measured outcomes
 
-`kaizen demo` replays a pre-recorded decompose/recompose against [`python-slugify`](https://github.com/un33k/python-slugify), then runs `pytest` live against the recomposed code. No API key required, no network calls, no credits spent. Takes under a minute end-to-end.
+| Case study | One-shot LLM | Kaizen (plain ADR) | Kaizen (+ domain schema) |
+|---|:-:|:-:|:-:|
+| [inih](docs/case-studies/memsafe-01-inih/README.md) — C → Rust, 522 LOC (`cargo check`) | 6 errors | 1 error | **0 errors** |
+| [Nancy](docs/case-studies/framework-01-nancy-context/README.md) — `NancyContext.cs` .NET Fx → .NET 8, 148 LOC (`dotnet build`) | 14 errors | **0 errors** | 0 errors |
+
+Methodology: three-arm ablation (one-shot control, plain ADR pipeline, ADR + domain schema) on real OSS repos. Exact commands, prompts, and raw outputs in each case-study directory.
+
+## What it isn't
+
+Kaizen is **not** a code-generation tool. The ADR is the product; the LLM is the tool that produces it. An ADR is an editable, auditable record of an architectural decision — the thing a compliance officer signs off on, the thing a reviewer pushes back on, the thing that survives when the model changes next quarter. Recompose is the CI check that the ADR actually predicts working code.
+
+## The two wedges
+
+- **`kaizen memsafe-roadmap <repo>`** — C/C++ → Rust. Produces a CISA-format memory-safety roadmap + per-module ADR stubs. Optionally recomposes to a Rust port.
+- **`kaizen migrate-plan --from X --to Y <repo>`** — framework modernization (9 pairs: AngularJS → Angular/React, jQuery → React, .NET Framework → .NET 8/9, Python 2 → 3, Java 8 → 17/21, Spring 4 → Spring Boot 3).
+
+Full CLI reference: [cli/README.md](cli/README.md).
+
+## License
+
+Kaizen is **dual-licensed**:
+
+- **Apache-2.0** for the CLI, pipeline, and provider adapters — `cli/`, `cli/pipeline/`, `agents/src/providers/`. Free forever. Installable via `pip install kaizen-3c-cli`.
+- **Kaizen Enterprise Commercial** for the enterprise wrapper — multi-tenancy, RBAC, SSO, MFA, audit-log export, approval workflows, cost attribution UI, budget caps. Lives under `interface/` and is priced in [docs/commercial/PRICING.md](docs/commercial/PRICING.md).
+
+The open-core boundary is explicit and enumerated in [ADR-0053](.architecture/decisions/ADR-0053-dual-license-apache2-commercial.md). No pipeline capability is paywalled — the commercial tier wraps infrastructure, not pipeline. Validated in [docs/CLI_VS_UI_CAPABILITY_REVIEW.md](docs/CLI_VS_UI_CAPABILITY_REVIEW.md).
+
+## Documentation
+
+- [Quickstart](quickstart.md)
+- [CLI guide](docs/CLI_GUIDE.md) — task-focused walkthrough of every command + the lite web UI
+- [CLI reference](cli/README.md) — full flag reference
+- [Strategic roadmap](STRATEGIC_ROADMAP.md) — where this is going
+- [Case studies](docs/case-studies/) — reproducible measurements
+- [Feature matrix — OSS vs Commercial](docs/commercial/FEATURE_MATRIX.md)
+- [Pricing](docs/commercial/PRICING.md)
+- [Memory-safety wedge rationale](docs/markets/MEMORY_SAFETY_WEDGE.md)
+- [Framework-modernization wedge rationale](docs/markets/FRAMEWORK_MODERNIZATION_WEDGE.md)
+- [Competitive positioning](docs/markets/COMPETITIVE_ANALYSIS_2026.md)
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). All Apache-2.0 inbound; Commercial-tier work happens in the private dev repo, not via public PRs. Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## Security
+
+To report a vulnerability, follow [SECURITY.md](SECURITY.md). Do not open a public issue for security-related findings.
 
 ---
 
-## What it does
+## For contributors — internals
 
-Three wedge commands cover the modernization workflows kaizen-cli was built for. Each emits an Architectural Decision Record (ADR) you can read, edit, or reject before any target code is generated.
+### Architecture
 
-- **`kaizen memsafe-roadmap <repo>`** — CISA-format memory-safety port plan with per-module ADR stubs. Optional `--recompose` step emits a Rust scaffold grounded in the ADR.
-
-  ```bash
-  kaizen memsafe-roadmap ./my-c-lib --recompose --rust-output ./rust-port
-  ```
-
-- **`kaizen migrate-plan <repo> --from <X> --to <Y>`** — framework-migration plan across supported transitions (`python3.6 -> python3.12`, `dotnet-framework -> dotnet8`, `angularjs -> angular`, `java8 -> java21`, and others).
-
-  ```bash
-  kaizen migrate-plan ./legacy-project --from "Python 3.6" --to "Python 3.12"
-  ```
-
-- **`kaizen bench`** — analyse commit0 benchmark results from [`Kaizen-3C/benchmarks`](https://github.com/Kaizen-3C/benchmarks). `fingerprint` computes per-cell value-add scores; `compare` diffs two architectures side-by-side. Full-sweep reproduction lives in the benchmarks repo itself — `kaizen bench commit0` prints exact steps and requirements.
-
-  ```bash
-  kaizen bench fingerprint --results ./commit0-results/
-  ```
-
-The full v1.0 command set: `decompose`, `recompose`, `memsafe-roadmap`, `migrate-plan`, `status`, `priors`, `resume`, `init`, `web`, `mcp-serve`, `bench`, `demo`, `version`.
-
----
-
-## Demo — `kaizen demo`
-
-Pre-recorded on `python-slugify`, runs offline, no API key required.
+Kaizen uses a four-tier architecture with a multi-agent denoising convergence loop. The CLI + pipeline (top-left in the diagram) is the Apache-2.0 surface; the ASP.NET + React UI is the Commercial wrapper.
 
 ```
-$ kaizen demo
-
-  Library:   python-slugify (string-to-slug converter, 1 module, 50+ tests)
-  LLM work:  pre-recorded — no API key required, no network calls.
-  pytest:    runs LIVE against the recomposed code — output is real.
-             (if the `[demo]` extras are installed; otherwise the pre-recorded run is printed)
-
-Step 1/3: Decomposing python-slugify...
-  ADR-python-slugify-decomposed   6 identifiers, 15 decisions, 8 consequences
-  (preview of first 30 lines of the ADR, full at adr.md)
-
-Step 2/3: Recomposing 6 files based on the ADR...
-  Elapsed (original run): 97s
-  Tests passed (cached):  33
-  Files recomposed:       slugify/__init__.py, slugify/slugify.py, slugify/__main__.py
-
-Step 3/3: Running pytest against recomposed code...
-  ================ 1 failed, 33 passed in 0.21s ================
+┌─────────────────────────────────────────────────────┐
+│  React / TypeScript UI  (interface/ui/)             │  ← Commercial
+│  Vite, Zustand, TanStack Query, Monaco, Recharts    │
+└────────────────────┬────────────────────────────────┘
+                     │ REST / HTTP
+┌────────────────────▼────────────────────────────────┐
+│  C# / ASP.NET Core 9 API  (interface/)              │  ← Commercial
+│  PostgreSQL, Redis, JWT + MFA                       │
+└────────────────────┬────────────────────────────────┘
+                     │ gRPC (deferred — see ADR-0061)
+┌────────────────────▼────────────────────────────────┐
+│  Rust Orchestrator  (core/)                         │  ← Apache (deferred modules)
+│  Concurrent decomposition engine, convergence gate  │
+└────────────────────┬────────────────────────────────┘
+                     │ in-process / gRPC
+┌────────────────────▼────────────────────────────────┐
+│  Python Agent Services  (cli/, agents/)             │  ← Apache — the shipped product
+│  Researcher, Red Team, Draft, Write, Evaluator      │
+│  LLM provider abstraction (Anthropic, OpenAI,       │
+│  Ollama, LiteLLM)                                   │
+└─────────────────────────────────────────────────────┘
 ```
 
-Honest results on the cached run: `python-slugify`'s own test suite shows **82 passing** on the original source; the recomposed package's own emitted test suite shows **33 passing, 1 failing** (a real behavioral divergence — `test_lowercase_false` reveals the recompose strips wrong characters when `lowercase=False`). The failure is not curated away — it's exactly the kind of first-pass gap the architecture-first workflow is built to surface before you ship.
+The five agents (Researcher, Red Team, Draft, Write, Evaluator) iterate over the decomposition output. Each round produces grounded confidence scores (test pass rate, static analysis, coverage); the orchestrator gates completion via a Thompson-sampling convergence decision (see ADR-0052).
 
----
+### Developer setup
 
-## Why another AI CLI?
+See [quickstart.md](quickstart.md) for environment prerequisites, Docker Compose setup for the full stack, and first-run instructions. For CLI-only development, `pip install -e .` at the repo root is enough.
 
-Honest feature comparison against adjacent tools. None of these are "better than" verdicts — they describe what each tool does and doesn't do in its current form.
+### Release process
 
-| Axis | kaizen-cli | OpenHands-CLI | Aider | Cursor |
-|---|:-:|:-:|:-:|:-:|
-| ADR-first workflow (plan before code) | yes | no (interactive agent loop) | no (edit-in-place) | no (in-editor completion) |
-| Offline replay / `demo` without an API key | yes | no | no | no |
-| Rust port output (C/C++ memory-safety wedge) | yes | partial (generic code-gen) | partial | partial |
-| Benchmarks reproduction subcommand | yes (`kaizen bench`) | no | no | no |
-| Governance / audit artifact (ADR + evidence) | yes (core) + signed ADR (commercial) | no | no | no |
-| Interactive TUI | deferred (post-1.0) | yes | yes | n/a (IDE) |
-| MCP server (expose the tool to Claude Desktop / Cursor / Zed) | yes (`kaizen mcp-serve`) | partial (client only) | no | host |
-
-Kaizen is **batch and measurable** — give it a repo, get an ADR you can diff, sign, or hand to a reviewer. OpenHands is **interactive and agentic** — chat with the agent, approve actions as it works. Different trust models, different product shapes.
-
----
-
-## Upstream: the benchmarks
-
-The methodology, raw data, and analysis scripts live upstream at **[Kaizen-3C/benchmarks](https://github.com/Kaizen-3C/benchmarks)**: an 8-architecture × 16-library matrix on the commit0 lite split, roughly 80 per-library result JSONs, plus two named architectural ceilings (marshmallow attribute-access, jinja relative-import). `kaizen bench` vendors the analysis scripts (`fingerprint`, `compare`) so the CLI works standalone on any results directory. Full-sweep reproduction runs from the benchmarks repo directly — it owns the environment conventions, Docker containers, and runner scripts. `kaizen bench commit0` inside the CLI prints the exact commands.
-
----
-
-## 3C lineage
-
-Kaizen-3C reframes the original Kaizen 3C method — **Concern · Cause · Countermeasure**, born on Toyota factory floors — for the software industry as **Code · Compose · Compliance**. The discipline is the same: observe the system before changing it, understand the cause before applying a fix, document the countermeasure so it survives audit. Architecture-first AI is the technical claim; 3C is the methodological lineage. Depth at [kaizen-3c.dev](https://kaizen-3c.dev).
-
----
-
-For deployment with governance (signed ADRs, audit-log export, multi-tenant): hello@kaizen-3c.dev.
-
----
-
-## Contributing, License, Security
-
-- Contributions: see [`CONTRIBUTING.md`](CONTRIBUTING.md). DCO sign-off required.
-- License: Apache-2.0. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
-- Security disclosures: see [`SECURITY.md`](SECURITY.md) or email security@kaizen-3c.dev.
+The public `kaizen` repo is curated from this `kaizen-delta` dev repo via an allowlist-driven export script. Maintainer runbook: [docs/release/RELEASE_PROCESS.md](docs/release/RELEASE_PROCESS.md). The authoritative allowlist: [docs/release/PUBLIC_REPO_ALLOWLIST.md](docs/release/PUBLIC_REPO_ALLOWLIST.md).

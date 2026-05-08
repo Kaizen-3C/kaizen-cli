@@ -1,7 +1,7 @@
 [project]
 name = "kaizen-3c-cli"
-version = "1.0.0"
-description = "Compliance-driven modernization engine. Decompose legacy codebases into editable ADRs, recompose to modern stacks, audit trail included."
+version = "1.0.1"
+description = "Architecture-driven modernization. Audit trail ships by default. Decompose legacy codebases into editable ADRs, recompose to modern stacks; compliance is what good architecture produces."
 readme = "README.pypi.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
@@ -61,7 +61,7 @@ web = [
 ]
 # MCP server — expose kaizen as an MCP tool provider so Claude Desktop,
 # Cursor, Zed, etc. can invoke kaizen's pipeline commands directly. See
-# New optional extras group for the MCP server (v0.5.0).
+# docs/CLI_ROADMAP.md v0.5.0.
 mcp = [
     "mcp>=1.0.0",
 ]

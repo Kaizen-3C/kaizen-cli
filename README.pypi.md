@@ -1,77 +1,121 @@
-# kaizen-3c-cli
+# Kaizen
 
-**Architecture-first AI for software modernization. Planning leads, code follows — every decision cited to `file:line`, reviewable as an ADR before a line of target code is written.**
+**Architecture-driven modernization. Audit trail ships by default.** Decompose legacy codebases into editable Architectural Decision Records (ADRs), recompose to modern stacks — compliance is what good architecture produces, not a feature you bolt on.
+
+> The ADR is the product. Every architectural decision is cited to `file:line` in the source, reviewable as markdown, signable for compliance. The code generation is downstream of the contract — a human reviewer can accept, edit, or reject decisions *before* any modern code is written.
 
 ## Install
 
 ```bash
-pip install "kaizen-3c-cli[demo]"
+# Recommended: isolated install, no virtualenv needed
+pipx install kaizen-3c-cli
+
+# uv (faster resolver)
+uv tool install kaizen-3c-cli
+
+# pip
+pip install kaizen-3c-cli
 ```
 
-> **Windows users:** install inside WSL (Ubuntu/Debian recommended). Native Windows is not a supported target.
+Also available without Python:
 
-`[demo]` is recommended for the full demo experience — it pulls in `pytest` so `kaizen demo`'s Step 3 runs live; the bare `pip install kaizen-3c-cli` still works but prints the pre-recorded test output instead.
+```bash
+winget install Kaizen3C.KaizenCLI          # Windows
+npm install -g kaizen-cli                  # any platform with Node
+brew tap Kaizen-3C/tap && brew install kaizen-cli  # macOS / Linux
+```
 
-Requires Python 3.10+. You will also need:
+Requires Python 3.10+ (pipx/uv/pip installs only). You will also need:
 
-- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in your environment (or a local `.env` file) for LLM-backed commands.
+- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` in your environment (or a local `.env` file).
 - Rust toolchain (`cargo`) if using `--recompose` for C/C++ → Rust memory-safety work.
 - .NET SDK (`dotnet`) if using `--recompose` for framework-migration work targeting .NET 8.
 
-## Try it
+## Quick start
+
+### Memory safety roadmap (C/C++ → Rust)
+
+For CISA memory-safety roadmap compliance. Produces a CISA-format roadmap markdown + per-module ADR stubs.
 
 ```bash
-kaizen demo
+kaizen memsafe-roadmap ./my-c-lib \
+  --output roadmap.md \
+  --adr-dir ./adrs \
+  --glob "*" \
+  --provider openai
+
+# Plain mode (no --domain schema — sufficient for most cases):
+kaizen memsafe-roadmap ./my-c-lib --plain -o roadmap.md
+
+# With Rust code generation:
+kaizen memsafe-roadmap ./my-c-lib --recompose --rust-output ./rust-port
 ```
 
-Replays a pre-recorded decompose/recompose against [`python-slugify`](https://github.com/un33k/python-slugify), then runs pytest live against the recomposed code. No API key required, under a minute end-to-end. On the cached run: 82 tests passing on the original, 33 of 34 passing on the recomposed (one real behavioral divergence captured, not hidden).
+### Framework migration plan (.NET Framework → .NET 8, AngularJS → Angular, etc.)
 
-## What it does
-
-- **`kaizen memsafe-roadmap <repo>`** — CISA-format memory-safety port plan with per-module ADR stubs. Optional `--recompose` step emits a Rust scaffold grounded in the ADR.
-
-  ```bash
-  kaizen memsafe-roadmap ./my-c-lib --recompose --rust-output ./rust-port
-  ```
-
-- **`kaizen migrate-plan <repo> --from <X> --to <Y>`** — framework-migration plan across supported transitions (`python3.6 -> python3.12`, `dotnet-framework -> dotnet8`, `angularjs -> angular`, `java8 -> java21`, and others).
-
-  ```bash
-  kaizen migrate-plan ./legacy-project --from "Python 3.6" --to "Python 3.12"
-  ```
-
-- **`kaizen bench fingerprint --results <dir>`** — compute per-cell value-add scores on any commit0 results directory. Also: `kaizen bench compare` for head-to-head architecture diffs, and `kaizen bench commit0` for upstream-reproduction instructions.
-
-The full v1.0 command set: `decompose`, `recompose`, `memsafe-roadmap`, `migrate-plan`, `status`, `priors`, `resume`, `init`, `web`, `mcp-serve`, `bench`, `demo`, `version`.
-
-## Demo flow
-
-Pre-recorded on `python-slugify`, runs offline, no API key required.
-
-```
-$ kaizen demo
-Step 1/3: Decomposing python-slugify...
-  ADR-python-slugify-decomposed   6 identifiers, 15 decisions, 8 consequences
-Step 2/3: Recomposing 6 files based on the ADR...
-  Files: slugify/__init__.py, slugify/slugify.py, slugify/__main__.py
-Step 3/3: Running pytest against recomposed code...
-  ================ 1 failed, 33 passed in 0.21s ================
+```bash
+kaizen migrate-plan ./legacy-csharp-project \
+  --from dotnet-framework --to dotnet8 \
+  --output migration-plan.md \
+  --provider openai
 ```
 
-Baseline (original `python-slugify`): 82 passing. Recomposed: 33 of 34 passing — the 1 failure is a real behavioral divergence surfaced by the workflow, not curated away.
+Supported transitions: `angularjs->angular`, `angularjs->react`, `jquery->react`, `dotnet-framework->dotnet8`, `dotnet-framework->dotnet9`, `python2->python3`, `spring4->spring-boot3`, `java8->java17`, `java8->java21`.
 
-## Links
+### Dry-run first
 
-- GitHub (source, issues, full README): https://github.com/Kaizen-3C/kaizen-cli
-- Upstream benchmarks: https://github.com/Kaizen-3C/benchmarks
-- Project homepage: https://kaizen-3c.dev
-- Commercial tier (signed ADRs, audit-log export, multi-tenant): hello@kaizen-3c.dev
-- Security disclosures: security@kaizen-3c.dev
+```bash
+kaizen memsafe-roadmap ./my-c-lib --dry-run
+kaizen migrate-plan ./project --from angularjs --to angular --dry-run
+```
+
+Prints the planned pipeline steps without calling any LLM. Use it to check paths, glob patterns, and provider settings before spending tokens.
+
+## Why this instead of one-shot AI coding tools?
+
+Measured on 2 case studies at `temperature=0`:
+
+| Case study | One-shot LLM (compiles?) | Kaizen plain ADR (compiles?) |
+|---|---|---|
+| `inih` C → Rust (522 LOC) | ❌ 6 `cargo check` errors | ✅ 1 error (minor gap) |
+| Nancy `NancyContext.cs` .NET Fx → .NET 8 (148 LOC) | ❌ 14 `dotnet build` errors | ✅ 0 errors |
+
+The ADR-as-contract closes ~83–100% of the "will it compile?" gap that one-shot LLMs leave open. The `--domain memory-safe` / `--domain framework-migration` schema flags add enterprise-tier plan-document richness (CISA-format roadmap, API-contract tables, dependency upgrade paths) on top.
+
+The one-shot baseline control is shipped with the CLI — run `oneshot_baseline.py` on the same source to measure the delta on your own code.
+
+## Positioning vs. alternatives
+
+- **vs. LegacyLeap** (full-lifecycle enterprise modernization platform) — we ship only the ADR + recompose pieces; cloud-agnostic; developer-led distribution.
+- **vs. Amazon Q Developer Transform** (Java 8 → 17 auto-upgrade) — we're LLM-agnostic (Anthropic or OpenAI), cloud-agnostic (runs on a laptop or air-gapped), cover broader language pairs, and expose the ADR as editable intermediate.
+- **vs. Google Jules / OpenHands / SWE-agent** (generic AI coding agents) — we're synchronous + deterministic (`temperature=0` default); auditable ADR artifact; different trust model for architecture-driven workflows where compliance is the goal architecture serves.
+
+## The ADR-as-contract claim, measured
+
+Three-arm ablation ([case study](https://github.com/aaronadame/Kaizen-delta/blob/main/docs/case-studies/memsafe-01-inih/README.md)):
+
+- **One-shot LLM** (no pipeline): 6 errors on `cargo check`.
+- **Kaizen plain ADR** (no domain schema): 1 error. +5 errors closed by the ADR alone.
+- **Kaizen + `--domain memory-safe`**: 0 errors. +1 additional error closed by the domain schema.
+
+The plain ADR pipeline captures ~83% of the measurable value. The domain schemas are enterprise polish. Commercially, this is an open-core model: free plain ADR, paid domain schemas + audit-log + air-gapped deployment.
+
+## License
+
+Apache-2.0. See `LICENSE`.
+
+## Contributing / Issues
+
+https://github.com/Kaizen-3C/kaizen-cli
 
 ## Status
 
 **1.0.0 — Alpha.** CLI subcommands `memsafe-roadmap`, `migrate-plan`, `run`, `priors`, `status` are end-to-end. PyPI package bundles the pipeline scripts via sdist for now; Phase C will move them under `cli/pipeline/` as a proper subpackage.
 
-## License
+Case studies:
 
-Apache-2.0.
+- [inih C → Rust](https://github.com/aaronadame/Kaizen-delta/blob/main/docs/case-studies/memsafe-01-inih/README.md) (Phase A, three-arm)
+- [Nancy `NancyContext.cs` .NET Fx → .NET 8](https://github.com/aaronadame/Kaizen-delta/blob/main/docs/case-studies/framework-01-nancy-context/README.md) (Phase B, three-arm)
+- [adr-tools bash → Python](https://github.com/aaronadame/Kaizen-delta/blob/main/docs/case-studies/01-adr-tools/README.md) (prior-session cross-language reference)
+
+See [docs/markets/](https://github.com/aaronadame/Kaizen-delta/tree/main/docs/markets) for the product wedge docs (memory safety + framework modernization) and [ARCHITECTURE_VALUE_MATRIX.md](https://github.com/aaronadame/Kaizen-delta/blob/main/docs/demos/ARCHITECTURE_VALUE_MATRIX.md) for the honest value claims backed by data.
