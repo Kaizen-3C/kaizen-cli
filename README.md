@@ -12,7 +12,7 @@
 | Method | Command |
 |---|---|
 | **winget** (Windows) | `winget install Kaizen3C.KaizenCLI` |
-| **npm** | `npm install -g kaizen-cli` |
+| **npm** | `npm install -g kaizen-3c-cli` |
 | **Homebrew** (macOS/Linux) | `brew tap Kaizen-3C/tap && brew install kaizen-cli` |
 | **pipx** (Python, recommended) | `pipx install kaizen-3c-cli` |
 | **uv** | `uv tool install kaizen-3c-cli` |
@@ -106,7 +106,3 @@ The five agents (Researcher, Red Team, Draft, Write, Evaluator) iterate over the
 ### Developer setup
 
 See [quickstart.md](quickstart.md) for environment prerequisites, Docker Compose setup for the full stack, and first-run instructions. For CLI-only development, `pip install -e .` at the repo root is enough.
-
-### Release process
-
-The public `kaizen` repo is curated from this `kaizen-delta` dev repo via an allowlist-driven export script. Maintainer runbook: [docs/release/RELEASE_PROCESS.md](docs/release/RELEASE_PROCESS.md). The authoritative allowlist: [docs/release/PUBLIC_REPO_ALLOWLIST.md](docs/release/PUBLIC_REPO_ALLOWLIST.md).
