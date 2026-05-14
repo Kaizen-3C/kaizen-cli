@@ -74,7 +74,10 @@ this repository:
 ## What IS in scope
 
 - Code-execution vulnerabilities in CLI commands or the optional web/MCP
-  server components.
+  server components. Sandbox / host-execution policy is governed by
+  [ADR-0042: Sandbox Bypass Policy](https://github.com/Kaizen-3C/kaizen-staging/blob/main/.architecture/decisions/ADR-0042-sandbox-bypass-policy.md)
+  in the staging repository — cite ADR-0042 in any disclosure that
+  touches host-execution semantics.
 - Credential or API-key leakage in commands, CI configs, or committed
   artifacts.
 - Prompt-injection or tool-call-hijacking vulnerabilities in the
