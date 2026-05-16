@@ -26,6 +26,7 @@ from cli.commands.mcp_serve import add_mcp_serve_parser, mcp_serve_command
 from cli.commands.priors import add_priors_parser, priors_command
 from cli.commands.resume import add_resume_parser, resume_command
 from cli.commands.status import add_status_parser, status_command
+from cli.commands.history import add_history_parser, history_command
 from cli.commands.web import add_web_parser, web_command
 from cli.commands.bench import add_bench_parser, bench_command
 from cli.commands.demo import add_demo_parser, demo_command
@@ -64,6 +65,7 @@ def _build_parser() -> argparse.ArgumentParser:
     add_migrate_plan_parser(subparsers)
     # Inspection / utility.
     add_status_parser(subparsers)
+    add_history_parser(subparsers)
     add_priors_parser(subparsers)
     add_resume_parser(subparsers)
     # First-run wizard + config inspection.
@@ -94,6 +96,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         if args.command == "status":
             return status_command(args)
+        if args.command == "history":
+            return history_command(args)
         if args.command == "priors":
             return priors_command(args)
         if args.command == "memsafe-roadmap":

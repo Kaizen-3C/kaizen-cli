@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- **`kaizen history`** — parses the `cd-aor: step N` git checkpoint commits
+  written by the orchestrator (ADR-0006) and prints the denoising trajectory
+  (confidence, delta, tests, files) with regression detection. Supports
+  `--path`, `--json`, and `--limit`.
+
 ## [1.0.1] - 2026-05-08
 
 ### Added

@@ -112,6 +112,7 @@ kaizen <command> [options]
 | `memsafe-roadmap`  | CISA-format memory-safety roadmap + ADRs (C/C++ → Rust wedge) |
 | `migrate-plan`     | framework migration plan + ADRs (9 pairs) |
 | `status`           | summary of recent Kaizen runs under a path |
+| `history`          | CD-AOR denoising trajectory from git checkpoints |
 | `priors`           | inspect or reset Thompson-sampling priors |
 | `resume`           | re-run recompose from the most recent (or specified) ADR |
 | `init`             | first-run configuration wizard — writes `~/.kaizen/config.toml` |
@@ -195,6 +196,23 @@ kaizen status --path ./out
 
 Summarizes the most recent `taor_observations.jsonl` and `priors.json`
 files it finds, with the last confidence trajectory.
+
+### `kaizen history` — the denoising audit trail
+
+```bash
+kaizen history                       # inspect ./
+kaizen history --path ./workspace    # a specific workspace repo
+kaizen history --json                # raw step records (JSON array)
+kaizen history --limit 10            # most recent 10 steps
+```
+
+Parses the `cd-aor: step N` checkpoint commits the orchestrator writes
+(ADR-0006) and prints the denoising trajectory: per-step composite
+confidence, convergence delta, test pass counts, files changed, commit, and
+timestamp. Steps whose confidence dropped vs. the previous step are flagged
+as regressions. Checkpoint commits whose metadata body is legacy/unparseable
+are skipped and counted; ordinary commits (the workspace baseline, human
+commits) are ignored.
 
 ### `kaizen priors show / reset`
 
