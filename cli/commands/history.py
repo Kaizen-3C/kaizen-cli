@@ -51,6 +51,9 @@ def add_history_parser(subparsers: argparse._SubParsersAction) -> argparse.Argum
                    help="Emit the parsed step records as a JSON array")
     p.add_argument("--limit", type=int, default=None, metavar="N",
                    help="Show only the most recent N steps")
+    p.add_argument("--task", default=None, metavar="ID",
+                   help="Only show steps for this task id (a shared workspace "
+                        "may interleave multiple tasks' checkpoints)")
     return p
 
 
@@ -199,6 +202,10 @@ def history_command(args: argparse.Namespace) -> int:
     except Exception as exc:  # pragma: no cover - defensive
         output.error(style, f"{exc.__class__.__name__}: {exc}")
         return 1
+
+    task = getattr(args, "task", None)
+    if task:
+        records = [r for r in records if r.get("task_id") == task]
 
     if args.limit is not None and args.limit >= 0:
         records = records[-args.limit:] if args.limit else []

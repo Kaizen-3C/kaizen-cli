@@ -10,9 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - **`kaizen history`** — parses the `cd-aor: step N` git checkpoint commits
   written by the orchestrator (ADR-0006) and prints the denoising trajectory
   (confidence, delta, tests, files) with regression detection. Supports
-  `--path`, `--json`, and `--limit`. Tolerates additive schema minor bumps
-  (e.g. 1.1.0) and surfaces checkpoints written by an unsupported schema
-  major instead of mis-rendering them.
+  `--path`, `--json`, `--limit`, and `--task` (scope to one task id when a
+  shared workspace interleaves multiple tasks' checkpoints). Tolerates
+  additive schema minor bumps (e.g. 1.1.0/1.2.0) and surfaces checkpoints
+  written by an unsupported schema major instead of mis-rendering them.
 
 ## [1.0.1] - 2026-05-08
 

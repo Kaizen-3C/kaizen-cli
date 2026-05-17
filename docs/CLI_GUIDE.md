@@ -204,6 +204,7 @@ kaizen history                       # inspect ./
 kaizen history --path ./workspace    # a specific workspace repo
 kaizen history --json                # raw step records (JSON array)
 kaizen history --limit 10            # most recent 10 steps
+kaizen history --task <task-id>      # scope to one task in a shared workspace
 ```
 
 Parses the `cd-aor: step N` checkpoint commits the orchestrator writes

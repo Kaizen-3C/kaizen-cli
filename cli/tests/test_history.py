@@ -18,7 +18,8 @@ from cli.commands.history import add_history_parser, history_command
 # ---------------------------------------------------------------------------
 
 def _make_args(**kwargs) -> argparse.Namespace:
-    defaults = dict(path=".", json=False, limit=None, no_color=True, verbose=False)
+    defaults = dict(path=".", json=False, limit=None, task=None,
+                    no_color=True, verbose=False)
     defaults.update(kwargs)
     return argparse.Namespace(**defaults)
 
@@ -202,13 +203,39 @@ def test_unsupported_schema_major_surfaced(tmp_path: Path,
     assert "2.0.0" in cap.err
 
 
+def test_task_filter_scopes_to_one_task(tmp_path: Path,
+                                        capsys: pytest.CaptureFixture) -> None:
+    """A shared workspace interleaving two tasks: --task isolates one."""
+    repo = tmp_path / "multi"
+    repo.mkdir()
+    _init_repo(repo)
+    a1 = _metadata(1, 0.60)
+    a1["task_id"] = "task-A"
+    b1 = _metadata(1, 0.55)
+    b1["task_id"] = "task-B"
+    a2 = _metadata(2, 0.72)
+    a2["task_id"] = "task-A"
+    _commit(repo, 1, "cd-aor: step 1 — A", json.dumps(a1))
+    _commit(repo, 2, "cd-aor: step 1 — B", json.dumps(b1))
+    _commit(repo, 3, "cd-aor: step 2 — A", json.dumps(a2))
+
+    rc = history_command(_make_args(path=str(repo), task="task-A", json=True))
+    assert rc == 0
+    data = json.loads(capsys.readouterr().out)
+    assert len(data) == 2
+    assert {r["task_id"] for r in data} == {"task-A"}
+    assert [r["step_number"] for r in data] == [1, 2]
+
+
 def test_add_history_parser() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command")
     add_history_parser(subparsers)
 
-    ns = parser.parse_args(["history", "--path", "X", "--json", "--limit", "5"])
+    ns = parser.parse_args(["history", "--path", "X", "--json",
+                            "--limit", "5", "--task", "t1"])
     assert ns.command == "history"
     assert ns.path == "X"
     assert ns.json is True
     assert ns.limit == 5
+    assert ns.task == "t1"
