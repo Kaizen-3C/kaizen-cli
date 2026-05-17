@@ -169,6 +169,39 @@ def test_only_human_commits_exit_0(tmp_path: Path,
     assert "No cd-aor checkpoints found" in capsys.readouterr().out
 
 
+def test_minor_schema_bump_still_parsed(tmp_path: Path,
+                                        capsys: pytest.CaptureFixture) -> None:
+    """A 1.x minor bump (additive, e.g. 1.1.0 rl_signals) stays parseable."""
+    repo = tmp_path / "minor"
+    repo.mkdir()
+    _init_repo(repo)
+    m = _metadata(1, 0.60)
+    m["schema_version"] = "1.1.0"
+    _commit(repo, 1, "cd-aor: step 1 — minor", json.dumps(m))
+
+    rc = history_command(_make_args(path=str(repo)))
+    assert rc == 0
+    assert "trajectory:" in capsys.readouterr().out
+
+
+def test_unsupported_schema_major_surfaced(tmp_path: Path,
+                                           capsys: pytest.CaptureFixture) -> None:
+    """A different schema MAJOR is not rendered and is surfaced to stderr."""
+    repo = tmp_path / "future"
+    repo.mkdir()
+    _init_repo(repo)
+    m = _metadata(1, 0.60)
+    m["schema_version"] = "2.0.0"
+    _commit(repo, 1, "cd-aor: step 1 — future", json.dumps(m))
+
+    rc = history_command(_make_args(path=str(repo)))
+    assert rc == 0
+    cap = capsys.readouterr()
+    assert "No cd-aor checkpoints found" in cap.out
+    assert "unsupported schema version" in cap.err
+    assert "2.0.0" in cap.err
+
+
 def test_add_history_parser() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command")

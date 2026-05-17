@@ -28,6 +28,11 @@ from ..output import Style
 _FIELD_SEP = "\x1f"
 _RECORD_SEP = "\x1e"
 _SUBJECT_PREFIX = "cd-aor: step "
+# Highest checkpoint metadata schema MAJOR this CLI understands. Minor bumps
+# are additive (e.g. 1.1.0 added the optional rl_signals block) and remain
+# parseable; a different MAJOR may have moved/removed fields, so such commits
+# are surfaced rather than silently mis-rendered.
+_SUPPORTED_SCHEMA_MAJOR = 1
 
 
 def add_history_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
@@ -58,18 +63,31 @@ def _git(path: str, args: List[str]) -> subprocess.CompletedProcess:
     )
 
 
-def _parse_commits(raw: str) -> Tuple[List[Dict[str, Any]], int]:
-    """Return (step_records, skipped_count).
+def _schema_major(version: Any) -> Any:
+    """Leading integer of a dotted ``schema_version``; None if unparseable."""
+    try:
+        return int(str(version).split(".", 1)[0])
+    except (ValueError, AttributeError):
+        return None
+
+
+def _parse_commits(
+    raw: str,
+) -> Tuple[List[Dict[str, Any]], int, List[str]]:
+    """Return (step_records, skipped_count, unsupported_versions).
 
     A commit is a step iff its subject starts with the cd-aor step prefix and
     its body is valid JSON carrying a ``schema_version``. Commits that look
     like cd-aor steps but whose body is unparseable/legacy are counted as
-    *skipped* (an actionable signal). Non-step commits (workspace baseline,
-    human commits) are silently ignored — counting them would be noise in a
-    repo with ordinary history.
+    *skipped* (an actionable signal). A step whose schema MAJOR differs from
+    what this CLI understands is not rendered (fields may have moved) and its
+    version is collected in ``unsupported_versions``. Non-step commits
+    (workspace baseline, human commits) are silently ignored — counting them
+    would be noise in a repo with ordinary history.
     """
     records: List[Dict[str, Any]] = []
     skipped = 0
+    unsupported: List[str] = []
     for chunk in raw.split(_RECORD_SEP):
         chunk = chunk.strip("\n")
         if not chunk or _FIELD_SEP not in chunk:
@@ -88,9 +106,15 @@ def _parse_commits(raw: str) -> Tuple[List[Dict[str, Any]], int]:
         if not isinstance(rec, dict) or "schema_version" not in rec:
             skipped += 1
             continue
+        major = _schema_major(rec.get("schema_version"))
+        if major != _SUPPORTED_SCHEMA_MAJOR:
+            ver = str(rec.get("schema_version"))
+            if ver not in unsupported:
+                unsupported.append(ver)
+            continue
         rec["_commit"] = commit_hash.strip()[:7]
         records.append(rec)
-    return records, skipped
+    return records, skipped, unsupported
 
 
 def _flag_regressions(records: List[Dict[str, Any]]) -> List[int]:
@@ -168,7 +192,7 @@ def history_command(args: argparse.Namespace) -> int:
         # empty trajectory, not an error.
         raw = log.stdout if log.returncode == 0 else ""
 
-        records, skipped = _parse_commits(raw)
+        records, skipped, unsupported = _parse_commits(raw)
     except FileNotFoundError:
         output.error(style, "git executable not found on PATH")
         return 1
@@ -183,12 +207,23 @@ def history_command(args: argparse.Namespace) -> int:
         print(json.dumps(records, indent=2))
         return 0
 
+    def _note_unsupported() -> None:
+        if unsupported:
+            vers = ", ".join(unsupported)
+            output.warn(
+                style,
+                f"{len(unsupported)} unsupported schema version(s) skipped "
+                f"({vers}); upgrade kaizen to read these checkpoints",
+            )
+
     if not records:
         print(f"No cd-aor checkpoints found in {root}")
         if skipped:
             print(style.dim(f"  (skipped {skipped} unparseable cd-aor checkpoint(s))"))
+        _note_unsupported()
         return 0
 
     regressed = _flag_regressions(records)
     _render_table(style, records, regressed, skipped)
+    _note_unsupported()
     return 0
