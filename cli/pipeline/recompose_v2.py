@@ -19,7 +19,7 @@ import anthropic
 import httpx
 
 MODEL = "claude-sonnet-4-5"
-DEFAULT_OPENAI_MODEL = "gpt-4.1"
+DEFAULT_OPENAI_MODEL = "gpt-5.4"  # was gpt-4.1; gpt-5* params handled via is_reasoning. Override: --model
 
 CODE_TOOL = {
     "name": "emit_code",
