@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Changed
+
+- Default OpenAI model for `decompose` / `recompose` generation is now `gpt-5.4`
+  (was `gpt-4.1`). Validated as the strong, low-cost default in the staging
+  repair-loop benchmarks; fully overridable via `--model`. Review/specialist
+  models and the benchmark baseline are unchanged.
+
 ## [1.0.1] - 2026-05-08
 
 ### Added

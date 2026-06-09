@@ -14,7 +14,7 @@ from pathlib import Path
 import anthropic
 
 MODEL = "claude-sonnet-4-5"
-DEFAULT_OPENAI_MODEL = "gpt-4.1"
+DEFAULT_OPENAI_MODEL = "gpt-5.4"  # was gpt-4.1; gpt-5* params handled via is_reasoning. Override: --model
 
 
 def _call_anthropic(client, *, tool, system, user, temperature):
