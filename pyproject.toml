@@ -1,6 +1,6 @@
 [project]
 name = "kaizen-3c-cli"
-version = "1.0.1"
+version = "1.0.2"
 description = "Architecture-driven modernization. Audit trail ships by default. Decompose legacy codebases into editable ADRs, recompose to modern stacks; compliance is what good architecture produces."
 readme = "README.pypi.md"
 requires-python = ">=3.10"

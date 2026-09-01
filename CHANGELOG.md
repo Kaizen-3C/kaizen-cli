@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.2] - 2026-09-01
+
+### Security
+
+- **The npm installer now verifies the binary it downloads.** `postinstall.js` fetches the
+  SHA-256 published alongside each release artifact, hashes the download and compares before
+  the binary is made executable. Previously the binary was downloaded, `chmod 755`'d and
+  installed with no integrity check of any kind.
+- **Release artifacts now ship a `.sha256` sidecar.** `build-binaries.py` writes
+  `dist/<artifact>.sha256` in `sha256sum`-compatible format, so `sha256sum -c` works on a
+  downloaded pair. The release workflow fails if the sidecar is missing.
+- Failure handling is split by cause: a download failure still warns and exits 0 so
+  `npm install` does not break over a network blip; a **missing** checksum deletes the binary
+  and installs nothing; a **mismatched** checksum deletes the binary and fails the install
+  loudly, printing both digests.
+
+  Scope, stated plainly: this defends against corruption, truncation and a wrong artifact
+  being attached to a release. It does **not** defend against a compromised release, since an
+  attacker able to replace the binary could replace the sidecar beside it. Pinning the digest
+  inside the npm package, or signing, is the stronger follow-up.
+
+### Fixed
+
+- **Intel macOS no longer 404s.** `platformArtifact()` still requested `kaizen-macos-x64`
+  after the macos-13 runner was dropped from the release matrix in 1.0.1, so every Intel Mac
+  install hit a missing artifact and an opaque warning. It now reports plainly that no
+  prebuilt binary is published for `darwin/x64` and points at `pip install kaizen-3c-cli`.
+- The redirect follower in `postinstall.js` gained a hop limit, and partial downloads are
+  removed on every failure path rather than only the first.
+
+### Changed
+
+- **README: ten dead links removed.** Both licence badges, the two case-study links in the
+  measured-outcomes table, `PRICING.md`, `ADR-0053`, the capability review, `quickstart.md`,
+  the case-studies directory and `CODE_OF_CONDUCT.md` all pointed at files not published in
+  this repository. Every relative link now resolves.
+- The measured-outcomes methodology note no longer promises per-case-study artifacts that are
+  not published here. The numbers are unchanged and now name the tools they were measured
+  with.
+
 ## [1.0.1] - 2026-05-08
 
 ### Added
