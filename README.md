@@ -2,8 +2,8 @@
 
 **Architecture-driven modernization. Audit trail ships by default.** Decompose legacy codebases into editable ADRs, recompose to modern stacks — compliance falls out of doing the architecture right, not bolted on after.
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.md)
-[![License: Commercial](https://img.shields.io/badge/Enterprise-Kaizen_Commercial-orange.svg)](LICENSE-COMMERCIAL.md)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![License: Commercial](https://img.shields.io/badge/Enterprise-Kaizen_Commercial-orange.svg)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 ![Status](https://img.shields.io/badge/status-public%20beta-blue)
 
@@ -29,10 +29,10 @@ kaizen memsafe-roadmap ./my-c-lib --output roadmap.md
 
 | Case study | One-shot LLM | Kaizen (plain ADR) | Kaizen (+ domain schema) |
 |---|:-:|:-:|:-:|
-| [inih](docs/case-studies/memsafe-01-inih/README.md) — C → Rust, 522 LOC (`cargo check`) | 6 errors | 1 error | **0 errors** |
-| [Nancy](docs/case-studies/framework-01-nancy-context/README.md) — `NancyContext.cs` .NET Fx → .NET 8, 148 LOC (`dotnet build`) | 14 errors | **0 errors** | 0 errors |
+| inih — C → Rust, 522 LOC (`cargo check`) | 6 errors | 1 error | **0 errors** |
+| Nancy — `NancyContext.cs` .NET Fx → .NET 8, 148 LOC (`dotnet build`) | 14 errors | **0 errors** | 0 errors |
 
-Methodology: three-arm ablation (one-shot control, plain ADR pipeline, ADR + domain schema) on real OSS repos. Exact commands, prompts, and raw outputs in each case-study directory.
+Methodology: three-arm ablation (one-shot control, plain ADR pipeline, ADR + domain schema) on real OSS repos, measured with `cargo check` and `dotnet build` respectively. The full case-study write-ups — exact commands, prompts and raw outputs — are not published in this repository yet.
 
 ## What it isn't
 
@@ -50,20 +50,19 @@ Full CLI reference: [cli/README.md](cli/README.md).
 Kaizen is **dual-licensed**:
 
 - **Apache-2.0** for the CLI, pipeline, and provider adapters — `cli/`, `cli/pipeline/`, `agents/src/providers/`. Free forever. Installable via `pip install kaizen-3c-cli`.
-- **Kaizen Enterprise Commercial** for the enterprise wrapper — multi-tenancy, RBAC, SSO, MFA, audit-log export, approval workflows, cost attribution UI, budget caps. Lives under `interface/` and is priced in [docs/commercial/PRICING.md](docs/commercial/PRICING.md).
+- **Kaizen Enterprise Commercial** for the enterprise wrapper — multi-tenancy, RBAC, SSO, MFA, audit-log export, approval workflows, cost attribution UI, budget caps. Lives under `interface/` and is priced separately.
 
-The open-core boundary is explicit and enumerated in [ADR-0053](.architecture/decisions/ADR-0053-dual-license-apache2-commercial.md). No pipeline capability is paywalled — the commercial tier wraps infrastructure, not pipeline. Validated in [docs/CLI_VS_UI_CAPABILITY_REVIEW.md](docs/CLI_VS_UI_CAPABILITY_REVIEW.md).
+The open-core boundary is explicit and enumerated: everything under `cli/` is Apache-2.0. **No pipeline capability is paywalled** — the commercial tier wraps infrastructure, not pipeline.
 
 ## Documentation
 
-- [Quickstart](quickstart.md)
 - [CLI guide](docs/CLI_GUIDE.md) — task-focused walkthrough of every command + the lite web UI
 - [CLI reference](cli/README.md) — full flag reference
-- [Case studies](docs/case-studies/) — reproducible measurements
+- [Changelog](CHANGELOG.md) — release history
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). All Apache-2.0 inbound; Commercial-tier work happens in the private dev repo, not via public PRs. Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). All Apache-2.0 inbound; Commercial-tier work happens in the private dev repo, not via public PRs.
 
 ## Security
 
@@ -105,4 +104,4 @@ The five agents (Researcher, Red Team, Draft, Write, Evaluator) iterate over the
 
 ### Developer setup
 
-See [quickstart.md](quickstart.md) for environment prerequisites, Docker Compose setup for the full stack, and first-run instructions. For CLI-only development, `pip install -e .` at the repo root is enough.
+For CLI-only development, `pip install -e .` at the repo root is enough. See the [CLI guide](docs/CLI_GUIDE.md) for command-level walkthroughs.
