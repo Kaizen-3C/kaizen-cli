@@ -1,0 +1,11 @@
+# Downloaded at install time by postinstall.js — never committed, never published.
+# package.json "files" is an explicit allowlist (bin/kaizen.js only), so these
+# cannot ship even if present; this keeps them out of the working tree too.
+bin/kaizen
+bin/kaizen.exe
+bin/.installed-version
+
+# Copied from the repository root by prepack.js at pack time.
+# The root files are the single source of truth; these are build output.
+LICENSE
+NOTICE

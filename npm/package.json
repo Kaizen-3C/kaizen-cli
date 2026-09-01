@@ -31,11 +31,13 @@
     "kaizen": "./bin/kaizen.js"
   },
   "scripts": {
+    "prepack": "node prepack.js",
     "postinstall": "node postinstall.js"
   },
   "files": [
-    "bin/",
+    "bin/kaizen.js",
     "postinstall.js",
-    "README.md"
+    "LICENSE",
+    "NOTICE"
   ]
 }
