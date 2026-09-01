@@ -1,12 +1,12 @@
 {
   "name": "kaizen-3c-cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Architecture-driven modernization. Decompose legacy codebases into editable ADRs, recompose to modern stacks.",
   "license": "Apache-2.0",
   "homepage": "https://kaizen-3c.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kaizen-3C/kaizen-cli.git"
+    "url": "git+https://github.com/Kaizen-3C/kaizen-cli.git"
   },
   "bugs": {
     "url": "https://github.com/Kaizen-3C/kaizen-cli/issues"
@@ -28,7 +28,7 @@
     "node": ">=16"
   },
   "bin": {
-    "kaizen": "./bin/kaizen.js"
+    "kaizen": "bin/kaizen.js"
   },
   "scripts": {
     "prepack": "node prepack.js",

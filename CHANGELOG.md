@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.3] - 2026-09-01
+
+**Publish 1.0.3, not 1.0.2, if you install from npm.** `kaizen-3c-cli@1.0.2` was published to
+the npm registry from a tree that predated the changes listed under 1.0.2 below. That tarball
+contains the old installer: no checksum verification, the Intel-macOS artifact bug still
+present, and no `LICENSE` or `NOTICE`. The version number cannot be reused, so 1.0.2 has been
+deprecated on npm and this release carries the work instead. PyPI 1.0.2 and the GitHub release
+artifacts for v1.0.2 were built from the tagged tree and are unaffected.
+
+### Security
+
+- Everything listed under 1.0.2 below now actually ships on the npm channel: SHA-256
+  verification of the downloaded binary, refusal to install anything unverifiable, and a loud
+  failure on mismatch.
+
+### Fixed
+
+- **The npm package now ships `LICENSE` and `NOTICE`.** `package.json` declares
+  `"license": "Apache-2.0"`, but npm only auto-includes those files when they sit in the
+  package directory, and this package lives in `npm/` rather than the repository root — so
+  every release since 1.0.0 has been distributed without them. Apache-2.0 §4(a) requires
+  recipients to receive a copy of the License and §4(d) requires the NOTICE attributions to
+  travel with it. A `prepack` step now copies both from the repository root and fails the pack
+  if either is missing.
+- **`files` is an explicit allowlist rather than a directory.** It previously listed `bin/`,
+  which is exactly where `postinstall.js` downloads a 20–34 MB platform binary at install
+  time; anyone running `npm install` in `npm/` before publishing would have shipped that
+  binary inside the package. Verified by dropping a fake binary into `bin/` and packing — the
+  tarball still contains only `bin/kaizen.js`.
+- `repository.url` and the `bin` path now use the forms npm normalises to, so `npm publish` no
+  longer reports auto-corrections.
+
 ## [1.0.2] - 2026-09-01
 
 ### Security
