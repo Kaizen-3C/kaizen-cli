@@ -78,7 +78,18 @@ jobs:
           ./dist/${{ matrix.artifact }} --version
           ./dist/${{ matrix.artifact }} status --help
 
+      - name: Verify checksum sidecar exists
+        shell: bash
+        run: |
+          test -f "dist/${{ matrix.artifact }}.sha256" || {
+            echo "::error::Missing dist/${{ matrix.artifact }}.sha256 -- the npm installer requires it"
+            exit 1
+          }
+          cat "dist/${{ matrix.artifact }}.sha256"
+
       - name: Attach to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/${{ matrix.artifact }}
+          files: |
+            dist/${{ matrix.artifact }}
+            dist/${{ matrix.artifact }}.sha256

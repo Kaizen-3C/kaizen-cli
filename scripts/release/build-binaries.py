@@ -2,18 +2,23 @@
 # SPDX-License-Identifier: Apache-2.0
 """Build a standalone kaizen binary for the current platform using PyInstaller.
 
-Invoked by the release CI matrix job on windows-latest, macos-13, macos-14,
-and ubuntu-22.04.  Also runnable locally for smoke-testing:
+Invoked by the release CI matrix job on windows-latest, macos-14 and
+ubuntu-22.04.  Also runnable locally for smoke-testing:
 
     pip install pyinstaller ".[demo]"
     python scripts/release/build-binaries.py
 
-Output: dist/kaizen-<platform>-<arch>[.exe]
+Output:
+    dist/kaizen-<platform>-<arch>[.exe]
+    dist/kaizen-<platform>-<arch>[.exe].sha256
+
+The .sha256 sidecar is what the npm installer verifies before it will chmod
+and install the binary.  Both files must be attached to the release.
 """
 
 from __future__ import annotations
 
-import os
+import hashlib
 import platform
 import shutil
 import subprocess
@@ -86,6 +91,16 @@ def main() -> int:
         print(f"Smoke test failed:\n{smoke.stderr}", file=sys.stderr)
         return 1
     print(f"Smoke test passed: {smoke.stdout.strip()}")
+
+    # Checksum sidecar. The npm installer refuses to install a binary it cannot
+    # verify against this file, so it is not optional -- if it is missing from
+    # the release, npm users get no binary at all.
+    digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    checksum_file = artifact.with_name(artifact.name + ".sha256")
+    # sha256sum-compatible format, so `sha256sum -c` works on the downloaded pair.
+    checksum_file.write_text(f"{digest}  {artifact.name}\n", encoding="utf-8")
+    print(f"Checksum:  {digest}")
+    print(f"Sidecar:   {checksum_file}")
     return 0
 
 
