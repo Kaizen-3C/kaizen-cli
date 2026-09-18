@@ -1,6 +1,6 @@
 {
   "name": "kaizen-3c-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Architecture-driven modernization. Decompose legacy codebases into editable ADRs, recompose to modern stacks.",
   "license": "Apache-2.0",
   "homepage": "https://kaizen-3c.dev",
