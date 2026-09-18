@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.4] - 2026-09-18
+
+### Changed
+
+- **`NOTICE` now says the company exists.** The chain-of-title clause stated, in the present
+  tense, that Kaizen-3C "is NOT, as of this NOTICE's date, a registered legal entity."
+  Kaizen-3C LLC was formed in Georgia on 31 August 2026, so that sentence has been wrong since
+  then — and it shipped inside the published package, not just on the repository page. The
+  clause now names the company and states what has not happened yet: the written instrument
+  assigning the project's intellectual property to it is final but **not executed**, so
+  copyright still sits with the named human author. A further NOTICE update follows on
+  execution.
+- The trademark-ownership line is unchanged and still correct: the assignment moves the marks
+  as well as the copyrights, so it stands until the same event.
+
+This release carries no code changes. It exists so the corrected `NOTICE` reaches the npm and
+PyPI channels, which ship it inside the distributed artifacts.
+
 ## [1.0.3] - 2026-09-01
 
 **Publish 1.0.3, not 1.0.2, if you install from npm.** `kaizen-3c-cli@1.0.2` was published to
